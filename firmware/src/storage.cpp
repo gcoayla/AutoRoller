@@ -41,6 +41,20 @@ Settings load() {
     s.current_position = prefs.getInt("cur_pos", 0);
     s.calibrated       = prefs.getBool("calibrated", false);
     s.use_endstops     = prefs.getBool("endstops", true);
+
+    s.ble_enabled      = prefs.getBool("ble_en", true);
+    s.ble_policy       = prefs.getUChar("ble_pol", BLE_DEFAULT_POLICY);
+    s.ble_passkey      = prefs.getUInt("ble_pin", 0);
+
+    s.ntp_enabled      = prefs.getBool("ntp_en", true);
+    s.ntp_server       = prefs.getString("ntp_srv", NTP_DEFAULT_SERVER);
+    s.timezone         = prefs.getString("tz",      NTP_DEFAULT_TZ);
+
+    // Schedules: payload binario plano para que sea atómico.
+    size_t need = sizeof(s.schedules);
+    if (prefs.getBytesLength("sched") == need) {
+        prefs.getBytes("sched", &s.schedules, need);
+    }
     return s;
 }
 
@@ -63,6 +77,20 @@ void save(const Settings& s) {
     prefs.putInt("cur_pos",      s.current_position);
     prefs.putBool("calibrated",  s.calibrated);
     prefs.putBool("endstops",    s.use_endstops);
+
+    prefs.putBool("ble_en",      s.ble_enabled);
+    prefs.putUChar("ble_pol",    s.ble_policy);
+    prefs.putUInt("ble_pin",     s.ble_passkey);
+
+    prefs.putBool("ntp_en",      s.ntp_enabled);
+    prefs.putString("ntp_srv",   s.ntp_server);
+    prefs.putString("tz",        s.timezone);
+
+    saveSchedules(s);
+}
+
+void saveSchedules(const Settings& s) {
+    prefs.putBytes("sched", &s.schedules, sizeof(s.schedules));
 }
 
 void savePosition(int32_t position) {

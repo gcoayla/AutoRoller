@@ -3,6 +3,7 @@
 #include <Arduino.h>
 #include <FastLED.h>
 
+#include "ble_provisioning.h"
 #include "config.h"
 #include "motor_controller.h"
 #include "wifi_manager.h"
@@ -46,6 +47,14 @@ static void updateLed() {
     uint32_t t = millis();
 
     CRGB c = CRGB::Black;
+
+    // Si hay un cliente BLE conectado, prioridad visual: cian fijo.
+    if (bleprov::isConnected()) {
+        s_leds[0] = CRGB(0, 32, 64);
+        FastLED.show();
+        return;
+    }
+
     switch (netcfg::mode()) {
         case netcfg::Mode::PORTAL: {
             // azul parpadeante
@@ -105,10 +114,14 @@ static void handleBtn(Btn& b, bool isUp) {
     }
     if (now && !b.longHandled && (t - b.pressedAt) > BUTTON_LONGPRESS_MS) {
         b.longHandled = true;
-        // pulsación larga simultánea de los dos = factory wifi
         if (s_up.last && s_dn.last) {
+            // pulsación larga simultánea de los dos = forzar portal WiFi
             Serial.println("[UI] Long-press en ambos botones → portal WiFi");
             netcfg::forcePortal();
+        } else if (isUp) {
+            // pulsación larga del botón "subir" = encender BLE de provisioning
+            Serial.println("[UI] Long-press subir → reactivar BLE");
+            bleprov::start();
         }
     }
 }

@@ -1,0 +1,309 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AutoRoller — Companion (Web Bluetooth)</title>
+    <style>
+        :root {
+            --bg: #0e1726; --card: #16213a; --fg: #e6ecf5; --muted: #8a98b3;
+            --primary: #4ea1ff; --warn: #ffb04e; --danger: #ff5e6c; --ok: #57d68d;
+            --border: rgba(255,255,255,0.06);
+        }
+        * { box-sizing: border-box; }
+        body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+               background: var(--bg); color: var(--fg); }
+        header { padding: 18px 16px; border-bottom: 1px solid var(--border); }
+        h1 { margin: 0; font-size: 20px; }
+        h2 { font-size: 14px; margin: 16px 0 8px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+        main { max-width: 600px; margin: 0 auto; padding: 16px; }
+        .card { background: var(--card); border: 1px solid var(--border);
+                border-radius: 12px; padding: 16px; margin-bottom: 12px; }
+        button { appearance: none; border: 1px solid var(--border);
+                 background: rgba(255,255,255,0.04); color: var(--fg);
+                 padding: 10px 14px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+        button.primary { background: var(--primary); color: #061226; border-color: transparent; }
+        button.danger  { background: rgba(255,94,108,0.12); color: var(--danger); border-color: rgba(255,94,108,0.3); }
+        button:disabled { opacity: 0.4; cursor: not-allowed; }
+        .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+        input[type=text], input[type=password], input[type=number] {
+            width: 100%; padding: 10px; border-radius: 8px;
+            border: 1px solid var(--border); background: rgba(0,0,0,0.2);
+            color: var(--fg); font-size: 14px; margin: 4px 0;
+        }
+        label { color: var(--muted); font-size: 12px; }
+        .pill { display: inline-block; padding: 3px 9px; border-radius: 999px;
+                font-size: 12px; font-weight: 600; }
+        .pill.ok    { background: rgba(87,214,141,.15);  color: var(--ok); }
+        .pill.bad   { background: rgba(255,94,108,.15);  color: var(--danger); }
+        .pill.warn  { background: rgba(255,176,78,.15);  color: var(--warn); }
+        .net { padding: 8px 10px; border-bottom: 1px solid var(--border);
+               display: flex; justify-content: space-between; cursor: pointer; }
+        .net:hover { background: rgba(255,255,255,0.03); }
+        .net small { color: var(--muted); }
+        pre { background: rgba(0,0,0,0.25); padding: 10px; border-radius: 8px;
+              overflow: auto; font-size: 12px; max-height: 200px; }
+        .hidden { display: none; }
+        .status-line { display: flex; justify-content: space-between; align-items: center; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="status-line">
+            <h1>AutoRoller Companion</h1>
+            <span id="conn" class="pill bad">Desconectado</span>
+        </div>
+    </header>
+    <main>
+        <div class="card">
+            <p>Esta página usa <strong>Web Bluetooth</strong> para configurar tu nodo
+               AutoRoller la primera vez, sin pasar por su WiFi de aprovisionamiento.
+               Funciona en Chrome / Edge en Windows, macOS, Linux y Android.</p>
+            <p class="row">
+                <button id="btn-connect" class="primary">Conectar nodo</button>
+                <button id="btn-disconnect" disabled>Desconectar</button>
+            </p>
+            <p id="warn" class="pill warn hidden">
+                Tu navegador no soporta Web Bluetooth. Usa Chrome o Edge.
+            </p>
+        </div>
+
+        <section id="panels" class="hidden">
+            <div class="card">
+                <h2>Información del dispositivo</h2>
+                <pre id="info">—</pre>
+            </div>
+
+            <div class="card">
+                <h2>WiFi</h2>
+                <button id="btn-scan">Buscar redes</button>
+                <div id="networks"></div>
+                <hr />
+                <label>SSID</label>
+                <input id="wifi_ssid" type="text" />
+                <label>Contraseña</label>
+                <input id="wifi_pass" type="password" />
+                <label>Hostname (mDNS)</label>
+                <input id="hostname" type="text" placeholder="autoroller-salon" />
+                <p class="row">
+                    <button id="btn-set-wifi" class="primary">Guardar y conectar</button>
+                </p>
+            </div>
+
+            <div class="card">
+                <h2>MQTT (opcional)</h2>
+                <label class="row"><input id="mqtt_enabled" type="checkbox" /> Activar MQTT</label>
+                <label>Host</label>
+                <input id="mqtt_host" type="text" placeholder="192.168.1.10" />
+                <label>Puerto</label>
+                <input id="mqtt_port" type="number" value="1883" />
+                <label>Usuario</label>
+                <input id="mqtt_user" type="text" />
+                <label>Contraseña</label>
+                <input id="mqtt_pass" type="password" />
+                <label>Topic base</label>
+                <input id="mqtt_base" type="text" value="autoroller" />
+                <p class="row">
+                    <button id="btn-set-mqtt" class="primary">Guardar MQTT</button>
+                </p>
+            </div>
+
+            <div class="card">
+                <h2>Hora / NTP</h2>
+                <label>Servidor NTP</label>
+                <input id="ntp_server" type="text" value="pool.ntp.org" />
+                <label>Zona horaria (POSIX)</label>
+                <input id="tz" type="text" value="CET-1CEST,M3.5.0/2,M10.5.0/3" />
+                <p class="row">
+                    <button id="btn-set-time" class="primary">Guardar hora</button>
+                </p>
+            </div>
+
+            <div class="card">
+                <h2>Control rápido</h2>
+                <p class="row">
+                    <button id="btn-open">▲ Subir</button>
+                    <button id="btn-stop">■ Parar</button>
+                    <button id="btn-close">▼ Bajar</button>
+                    <button id="btn-calibrate">Calibrar</button>
+                </p>
+            </div>
+
+            <div class="card">
+                <h2>Mantenimiento</h2>
+                <p class="row">
+                    <button id="btn-reboot">Reiniciar</button>
+                    <button id="btn-ble-off" class="danger">Apagar BLE</button>
+                    <button id="btn-factory" class="danger">Reset fábrica</button>
+                </p>
+            </div>
+
+            <div class="card">
+                <h2>Log</h2>
+                <pre id="log"></pre>
+            </div>
+        </section>
+    </main>
+
+    <script>
+    const SVC          = "5a6f7e10-1a0e-4b0f-bd54-aaaa00000001";
+    const CHR_REQUEST  = "5a6f7e10-1a0e-4b0f-bd54-aaaa00000002";
+    const CHR_RESPONSE = "5a6f7e10-1a0e-4b0f-bd54-aaaa00000003";
+    const CHR_STATUS   = "5a6f7e10-1a0e-4b0f-bd54-aaaa00000004";
+
+    let device, server, svc, reqChr, respChr, statChr;
+    let respBuf = "";
+    const pending = [];
+
+    const $ = (id) => document.getElementById(id);
+    const log = (msg) => { $("log").textContent = (new Date().toLocaleTimeString() + "  " + msg + "\n" + $("log").textContent).slice(0, 4000); };
+
+    if (!navigator.bluetooth) { $("warn").classList.remove("hidden"); $("btn-connect").disabled = true; }
+
+    async function connect() {
+        try {
+            device = await navigator.bluetooth.requestDevice({
+                filters: [{ services: [SVC] }],
+                optionalServices: [SVC],
+            });
+            device.addEventListener("gattserverdisconnected", onDisc);
+            log("conectando GATT...");
+            server = await device.gatt.connect();
+            svc    = await server.getPrimaryService(SVC);
+            reqChr  = await svc.getCharacteristic(CHR_REQUEST);
+            respChr = await svc.getCharacteristic(CHR_RESPONSE);
+            statChr = await svc.getCharacteristic(CHR_STATUS);
+            await respChr.startNotifications();
+            respChr.addEventListener("characteristicvaluechanged", onResponse);
+            await statChr.startNotifications();
+            statChr.addEventListener("characteristicvaluechanged", onStatus);
+            $("conn").textContent = "Conectado: " + device.name;
+            $("conn").className = "pill ok";
+            $("btn-connect").disabled = true;
+            $("btn-disconnect").disabled = false;
+            $("panels").classList.remove("hidden");
+            log("conectado · MTU se negocia automáticamente");
+            await sendCmd({ op: "info" });
+            await sendCmd({ op: "get_config" });
+        } catch (e) {
+            log("error: " + e.message);
+        }
+    }
+
+    function onDisc() {
+        $("conn").textContent = "Desconectado";
+        $("conn").className = "pill bad";
+        $("btn-connect").disabled = false;
+        $("btn-disconnect").disabled = true;
+        $("panels").classList.add("hidden");
+        log("desconectado");
+    }
+
+    async function disconnect() {
+        if (device && device.gatt.connected) device.gatt.disconnect();
+    }
+
+    function onStatus(ev) {
+        try {
+            const dec = new TextDecoder();
+            const obj = JSON.parse(dec.decode(ev.target.value));
+            log("status: " + JSON.stringify(obj));
+        } catch (e) {}
+    }
+
+    function onResponse(ev) {
+        const dec = new TextDecoder();
+        respBuf += dec.decode(ev.target.value);
+        let idx;
+        while ((idx = respBuf.indexOf("\n")) !== -1) {
+            const piece = respBuf.slice(0, idx);
+            respBuf = respBuf.slice(idx + 1);
+            try {
+                const obj = JSON.parse(piece);
+                log("← " + JSON.stringify(obj));
+                handleResponse(obj);
+                if (pending.length) pending.shift().resolve(obj);
+            } catch (e) {
+                log("respuesta no parseable: " + piece);
+            }
+        }
+    }
+
+    function handleResponse(obj) {
+        if (obj.op === "info") $("info").textContent = JSON.stringify(obj, null, 2);
+        if (obj.op === "scan_wifi") {
+            const c = $("networks");
+            c.innerHTML = "";
+            for (const n of obj.networks || []) {
+                const el = document.createElement("div");
+                el.className = "net";
+                el.innerHTML = `<span>${n.ssid || "(oculta)"}</span>` +
+                               `<small>${n.rssi} dBm · ${n.open ? "abierta" : "🔒"}</small>`;
+                el.onclick = () => $("wifi_ssid").value = n.ssid;
+                c.appendChild(el);
+            }
+        }
+        if (obj.op === "get_config") {
+            for (const [k, v] of Object.entries(obj)) {
+                const el = $({
+                    hostname:        "hostname",
+                    mqtt_enabled:    "mqtt_enabled",
+                    mqtt_host:       "mqtt_host",
+                    mqtt_port:       "mqtt_port",
+                    mqtt_base_topic: "mqtt_base",
+                    ntp_server:      "ntp_server",
+                    timezone:        "tz",
+                }[k]);
+                if (!el) continue;
+                if (el.type === "checkbox") el.checked = !!v;
+                else el.value = v ?? "";
+            }
+        }
+    }
+
+    function sendCmd(obj) {
+        return new Promise((resolve, reject) => {
+            const enc = new TextEncoder();
+            const data = enc.encode(JSON.stringify(obj));
+            log("→ " + JSON.stringify(obj));
+            pending.push({ resolve, reject });
+            reqChr.writeValueWithoutResponse(data).catch((e) => {
+                pending.shift(); reject(e);
+            });
+            setTimeout(() => {
+                if (pending.length) { const p = pending.shift(); p.reject(new Error("timeout")); }
+            }, 6000);
+        });
+    }
+
+    // --- handlers
+    $("btn-connect").onclick    = connect;
+    $("btn-disconnect").onclick = disconnect;
+    $("btn-scan").onclick       = () => sendCmd({ op: "scan_wifi" });
+    $("btn-set-wifi").onclick   = async () => {
+        if ($("hostname").value) await sendCmd({ op: "set_hostname", hostname: $("hostname").value });
+        await sendCmd({ op: "set_wifi", ssid: $("wifi_ssid").value, password: $("wifi_pass").value });
+    };
+    $("btn-set-mqtt").onclick   = () => sendCmd({
+        op: "set_mqtt",
+        enabled: $("mqtt_enabled").checked,
+        host: $("mqtt_host").value, port: Number($("mqtt_port").value),
+        user: $("mqtt_user").value, password: $("mqtt_pass").value,
+        base_topic: $("mqtt_base").value,
+    });
+    $("btn-set-time").onclick   = () => sendCmd({
+        op: "set_time", enabled: true,
+        server: $("ntp_server").value, timezone: $("tz").value,
+    });
+    $("btn-open").onclick       = () => sendCmd({ op: "control", action: "open" });
+    $("btn-close").onclick      = () => sendCmd({ op: "control", action: "close" });
+    $("btn-stop").onclick       = () => sendCmd({ op: "control", action: "stop" });
+    $("btn-calibrate").onclick  = () => sendCmd({ op: "calibrate" });
+    $("btn-reboot").onclick     = () => sendCmd({ op: "reboot" });
+    $("btn-ble-off").onclick    = () => sendCmd({ op: "ble_off" });
+    $("btn-factory").onclick    = () => {
+        if (confirm("Esto borra TODA la configuración. ¿Seguro?")) sendCmd({ op: "factory_reset" });
+    };
+    </script>
+</body>
+</html>

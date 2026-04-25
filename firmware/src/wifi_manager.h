@@ -29,4 +29,8 @@ String hostname();
 // Fuerza entrar al portal en el siguiente loop (botón "olvidar wifi" en la web).
 void forcePortal();
 
+// Aplica las credenciales recién guardadas: cierra cualquier sesión actual y
+// vuelve a intentar conectar como STA. Útil tras provisionamiento BLE.
+void reconfigureFromSettings(const storage::Settings& settings);
+
 }  // namespace netcfg

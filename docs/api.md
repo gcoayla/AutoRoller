@@ -1,10 +1,12 @@
-# API REST, WebSocket y MQTT
+# API REST, WebSocket, MQTT y BLE
 
-Cada nodo AutoRoller expone tres formas de control:
+Cada nodo AutoRoller expone cuatro formas de control:
 
 1. **HTTP REST** (síncrono, sencillo desde cualquier cliente).
 2. **WebSocket** (`/ws`, eventos en tiempo real para la UI).
 3. **MQTT** (asíncrono, ideal para integraciones home-automation y voz).
+4. **BLE GATT** (configuración inicial y respaldo cuando no hay WiFi —
+   ver [`docs/ble-provisioning.md`](ble-provisioning.md)).
 
 Todos comparten el mismo modelo de estado.
 
@@ -47,6 +49,11 @@ Base: `http://<hostname>.local/` o `http://<ip>/`.
 | GET    | `/api/status`       | Devuelve el JSON de estado                   |
 | GET    | `/api/config`       | Devuelve la configuración actual             |
 | POST   | `/api/config`       | Actualiza configuración (body JSON)          |
+| GET    | `/api/scan`         | Escanea redes WiFi visibles                  |
+| GET    | `/api/schedules`    | Lista las 8 entradas del programador         |
+| POST   | `/api/schedules`    | Edita una entrada (body con `i, hour, ...`)  |
+| DELETE | `/api/schedules?i=N`| Borra la entrada N                           |
+| POST   | `/api/ble`          | `{"action":"on" \| "off"}`                   |
 | POST   | `/api/open`         | Sube totalmente (= 0 %)                      |
 | POST   | `/api/close`        | Baja totalmente (= 100 %)                    |
 | POST   | `/api/stop`         | Detiene el movimiento                        |

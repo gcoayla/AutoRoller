@@ -100,7 +100,25 @@ protoboard siguiendo el pinout de [`docs/hardware.md`](hardware.md).
    [WiFi] AP: AutoRoller-XXXXXX  IP: 192.168.4.1
    ```
 
-## Paso 4 — Configuración WiFi (portal cautivo)
+## Paso 4 — Configuración inicial
+
+Tienes **dos vías** de configurar el nodo. Cualquiera vale; usa la que
+prefieras.
+
+### Vía A — Bluetooth (recomendada)
+
+1. Abre `companion/index.html` en Chrome/Edge (en escritorio o Android).
+2. Pulsa **"Conectar nodo"** y selecciona el `AutoRoller-XXXX` cercano.
+3. Pulsa **"Buscar redes"**, selecciona tu WiFi, escribe la contraseña y
+   guarda. (Opcional: configura MQTT y NTP en la misma sesión.)
+4. El nodo se conecta a tu WiFi en cuestión de segundos.
+
+Detalles completos en [`docs/ble-provisioning.md`](ble-provisioning.md).
+
+> Si usas iPhone/iPad, salta a la vía B (Apple no soporta Web Bluetooth).
+> También puedes usar `scripts/ble_provision.py` desde un PC con bleak.
+
+### Vía B — Portal cautivo WiFi
 
 1. Conecta tu móvil a la red WiFi `AutoRoller-XXXXXX` (sin contraseña por
    defecto, o `autoroller` si la has fijado en `config.h`).

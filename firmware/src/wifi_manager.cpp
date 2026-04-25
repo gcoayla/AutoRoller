@@ -54,6 +54,23 @@ void forcePortal() {
     s_forcePortal = true;
 }
 
+void reconfigureFromSettings(const storage::Settings& settings) {
+    if (!s_settings) return;
+    *s_settings = settings;
+    s_hostname  = settings.hostname;
+    if (s_mode == Mode::PORTAL) {
+        s_dns.stop();
+        WiFi.softAPdisconnect(true);
+    }
+    WiFi.disconnect(true, true);
+    delay(100);
+    if (settings.wifi_ssid.length() == 0) {
+        startPortal();
+    } else {
+        connectSTA();
+    }
+}
+
 void loop() {
     if (s_forcePortal) {
         s_forcePortal = false;

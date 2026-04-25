@@ -93,6 +93,44 @@
 #define NVS_NAMESPACE              "autoroller"
 
 // =============================================================================
+//  Bluetooth Low Energy (BLE) — provisionamiento y control
+// =============================================================================
+// Prefijo del nombre BLE; al final se le añade -XXXX (de la MAC).
+#define BLE_NAME_PREFIX            "AutoRoller"
+
+// UUIDs del servicio y características (128-bit, custom).
+#define BLE_SVC_UUID               "5a6f7e10-1a0e-4b0f-bd54-aaaa00000001"
+#define BLE_CHR_REQUEST_UUID       "5a6f7e10-1a0e-4b0f-bd54-aaaa00000002"
+#define BLE_CHR_RESPONSE_UUID      "5a6f7e10-1a0e-4b0f-bd54-aaaa00000003"
+#define BLE_CHR_STATUS_UUID        "5a6f7e10-1a0e-4b0f-bd54-aaaa00000004"
+
+// Política por defecto:
+//   0 = always   (BLE siempre encendido, recomendado para control de respaldo)
+//   1 = until_wifi (apaga BLE en cuanto WiFi conecta por primera vez)
+//   2 = 5min     (apaga BLE 5 min después del arranque)
+//   3 = off      (BLE deshabilitado salvo activación manual)
+#define BLE_DEFAULT_POLICY         0
+
+// Tiempo de la política "5min" en milisegundos.
+#define BLE_TIMED_OFF_MS           (5 * 60 * 1000UL)
+
+// Si pones 1, exige passkey de 6 dígitos al emparejar (mostramos 0 por
+// defecto y el usuario lo cambia desde la web; si lo deja en 0, va sin PIN).
+#define BLE_USE_PASSKEY            0
+
+// =============================================================================
+//  NTP / hora
+// =============================================================================
+#define NTP_DEFAULT_SERVER         "pool.ntp.org"
+// Cadena POSIX para España peninsular. Cámbiala a tu zona si vives en otra.
+#define NTP_DEFAULT_TZ             "CET-1CEST,M3.5.0/2,M10.5.0/3"
+
+// =============================================================================
+//  Programador horario (schedules)
+// =============================================================================
+#define SCHEDULER_MAX_ENTRIES      8
+
+// =============================================================================
 //  Tareas FreeRTOS
 // =============================================================================
 #define MOTOR_TASK_CORE            1

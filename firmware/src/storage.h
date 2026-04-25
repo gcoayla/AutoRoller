@@ -8,6 +8,14 @@
 
 namespace storage {
 
+struct ScheduleEntry {
+    bool    enabled    = false;
+    uint8_t hour       = 0;       // 0..23
+    uint8_t minute     = 0;       // 0..59
+    uint8_t days_mask  = 0x7F;    // bit 0=Lun, 1=Mar, ... 6=Dom (0x7F = todos)
+    uint8_t target_pct = 0;       // 0..100
+};
+
 struct Settings {
     // Identidad
     String hostname;
@@ -34,12 +42,26 @@ struct Settings {
     // Calibración
     bool     calibrated       = false;
     bool     use_endstops     = true;
+
+    // BLE
+    bool     ble_enabled      = true;     // se puede apagar desde la web
+    uint8_t  ble_policy       = 0;        // 0=always 1=until_wifi 2=5min 3=off
+    uint32_t ble_passkey      = 0;        // 0 = sin PIN
+
+    // NTP / zona horaria
+    bool     ntp_enabled      = true;
+    String   ntp_server       = "pool.ntp.org";
+    String   timezone         = "CET-1CEST,M3.5.0/2,M10.5.0/3";
+
+    // Programador
+    ScheduleEntry schedules[8];
 };
 
 void begin();
 Settings load();
 void save(const Settings& s);
 void savePosition(int32_t position);
+void saveSchedules(const Settings& s);
 void factoryReset();
 
 }  // namespace storage

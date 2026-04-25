@@ -7,9 +7,12 @@
 #include <ESPAsyncWebServer.h>
 #include <LittleFS.h>
 #include <Update.h>
+#include <WiFi.h>
 
+#include "ble_provisioning.h"
 #include "config.h"
 #include "motor_controller.h"
+#include "time_sync.h"
 #include "wifi_manager.h"
 
 namespace web {
@@ -43,7 +46,12 @@ static String stateJson() {
     doc["calibrated"]  = motor::isCalibrated();
     doc["wifi_ssid"]   = netcfg::currentSSID();
     doc["wifi_ip"]     = netcfg::currentIP();
+    doc["wifi_rssi"]   = WiFi.RSSI();
     doc["mqtt_on"]     = s_settings->mqtt_enabled;
+    doc["ble_on"]      = bleprov::isInitialized();
+    doc["ble_conn"]    = bleprov::isConnected();
+    doc["time"]        = timesync::isSynced() ? timesync::currentLocalDateTime() : String("");
+    doc["uptime_s"]    = (uint32_t)(millis() / 1000);
     String out;
     serializeJson(doc, out);
     return out;
@@ -120,6 +128,86 @@ static void handleConfigGet(AsyncWebServerRequest* req) {
     doc["max_speed_hz"]     = s_settings->max_speed_hz;
     doc["accel_hz_per_s"]   = s_settings->accel_hz_per_s;
     doc["use_endstops"]     = s_settings->use_endstops;
+    doc["ble_enabled"]      = s_settings->ble_enabled;
+    doc["ble_policy"]       = s_settings->ble_policy;
+    doc["ble_passkey"]      = s_settings->ble_passkey;
+    doc["ntp_enabled"]      = s_settings->ntp_enabled;
+    doc["ntp_server"]       = s_settings->ntp_server;
+    doc["timezone"]         = s_settings->timezone;
+    String out; serializeJson(doc, out);
+    req->send(200, "application/json", out);
+}
+
+static void handleScheduleGet(AsyncWebServerRequest* req) {
+    JsonDocument doc;
+    JsonArray arr = doc["schedules"].to<JsonArray>();
+    for (size_t i = 0; i < SCHEDULER_MAX_ENTRIES; ++i) {
+        JsonObject e = arr.add<JsonObject>();
+        e["i"]          = (int)i;
+        e["enabled"]    = s_settings->schedules[i].enabled;
+        e["hour"]       = s_settings->schedules[i].hour;
+        e["minute"]     = s_settings->schedules[i].minute;
+        e["days_mask"]  = s_settings->schedules[i].days_mask;
+        e["target_pct"] = s_settings->schedules[i].target_pct;
+    }
+    doc["time"] = timesync::isSynced() ? timesync::currentLocalDateTime() : String("");
+    String out; serializeJson(doc, out);
+    req->send(200, "application/json", out);
+}
+
+static void handleSchedulePost(AsyncWebServerRequest* req, JsonVariant& body) {
+    auto obj = body.as<JsonObject>();
+    int i = obj["i"] | -1;
+    if (i < 0 || i >= (int)SCHEDULER_MAX_ENTRIES) {
+        req->send(400, "application/json", "{\"error\":\"índice fuera de rango\"}");
+        return;
+    }
+    auto& e = s_settings->schedules[i];
+    if (obj["enabled"].is<bool>())   e.enabled    = obj["enabled"].as<bool>();
+    if (obj["hour"].is<int>())       e.hour       = obj["hour"].as<int>();
+    if (obj["minute"].is<int>())     e.minute     = obj["minute"].as<int>();
+    if (obj["days_mask"].is<int>())  e.days_mask  = obj["days_mask"].as<int>();
+    if (obj["target_pct"].is<int>()) e.target_pct = obj["target_pct"].as<int>();
+    storage::saveSchedules(*s_settings);
+    req->send(200, "application/json", "{\"ok\":true}");
+}
+
+static void handleScheduleDelete(AsyncWebServerRequest* req) {
+    if (!req->hasParam("i")) {
+        req->send(400, "application/json", "{\"error\":\"falta i\"}"); return;
+    }
+    int i = req->getParam("i")->value().toInt();
+    if (i < 0 || i >= (int)SCHEDULER_MAX_ENTRIES) {
+        req->send(400, "application/json", "{\"error\":\"índice fuera de rango\"}"); return;
+    }
+    s_settings->schedules[i] = storage::ScheduleEntry{};
+    storage::saveSchedules(*s_settings);
+    req->send(200, "application/json", "{\"ok\":true}");
+}
+
+static void handleBlePost(AsyncWebServerRequest* req, JsonVariant& body) {
+    auto obj = body.as<JsonObject>();
+    String action = obj["action"] | "";
+    if (action == "on")           bleprov::start();
+    else if (action == "off")     bleprov::stop();
+    else { req->send(400, "application/json", "{\"error\":\"action: on|off\"}"); return; }
+    req->send(200, "application/json", "{\"ok\":true}");
+}
+
+static void handleScan(AsyncWebServerRequest* req) {
+    int n = WiFi.scanNetworks(false, true);
+    if (n < 0) n = 0;
+    JsonDocument doc;
+    JsonArray arr = doc["networks"].to<JsonArray>();
+    int max = n > 16 ? 16 : n;
+    for (int i = 0; i < max; ++i) {
+        JsonObject net = arr.add<JsonObject>();
+        net["ssid"]    = WiFi.SSID(i);
+        net["rssi"]    = WiFi.RSSI(i);
+        net["channel"] = WiFi.channel(i);
+        net["open"]    = (WiFi.encryptionType(i) == WIFI_AUTH_OPEN);
+    }
+    WiFi.scanDelete();
     String out; serializeJson(doc, out);
     req->send(200, "application/json", out);
 }
@@ -139,6 +227,12 @@ static void handleConfigPost(AsyncWebServerRequest* req, JsonVariant& body) {
     if (obj["max_speed_hz"].is<int>())              s_settings->max_speed_hz    = obj["max_speed_hz"].as<int>();
     if (obj["accel_hz_per_s"].is<int>())            s_settings->accel_hz_per_s  = obj["accel_hz_per_s"].as<int>();
     if (obj["use_endstops"].is<bool>())             s_settings->use_endstops    = obj["use_endstops"].as<bool>();
+    if (obj["ble_enabled"].is<bool>())              s_settings->ble_enabled     = obj["ble_enabled"].as<bool>();
+    if (obj["ble_policy"].is<int>())                s_settings->ble_policy      = obj["ble_policy"].as<int>();
+    if (obj["ble_passkey"].is<int>())               s_settings->ble_passkey     = obj["ble_passkey"].as<unsigned int>();
+    if (obj["ntp_enabled"].is<bool>())              s_settings->ntp_enabled     = obj["ntp_enabled"].as<bool>();
+    if (obj["ntp_server"].is<const char*>())        s_settings->ntp_server      = obj["ntp_server"].as<String>();
+    if (obj["timezone"].is<const char*>())          s_settings->timezone        = obj["timezone"].as<String>();
     storage::save(*s_settings);
     req->send(200, "application/json", "{\"ok\":true}");
 }
@@ -189,13 +283,25 @@ void begin(storage::Settings& settings) {
     server.on("/api/forget-wifi",    HTTP_POST, handleForgetWifi);
     server.on("/api/factory-reset",  HTTP_POST, handleFactoryReset);
     server.on("/api/config",         HTTP_GET,  handleConfigGet);
+    server.on("/api/scan",           HTTP_GET,  handleScan);
+    server.on("/api/schedules",      HTTP_GET,  handleScheduleGet);
+    server.on("/api/schedules",      HTTP_DELETE, handleScheduleDelete);
 
-    auto* configPost = new AsyncCallbackJsonWebHandler(
+    server.addHandler(new AsyncCallbackJsonWebHandler(
         "/api/config",
         [](AsyncWebServerRequest* req, JsonVariant& json) {
             handleConfigPost(req, json);
-        });
-    server.addHandler(configPost);
+        }));
+    server.addHandler(new AsyncCallbackJsonWebHandler(
+        "/api/schedules",
+        [](AsyncWebServerRequest* req, JsonVariant& json) {
+            handleSchedulePost(req, json);
+        }));
+    server.addHandler(new AsyncCallbackJsonWebHandler(
+        "/api/ble",
+        [](AsyncWebServerRequest* req, JsonVariant& json) {
+            handleBlePost(req, json);
+        }));
 
     // ---- atajo legacy: /up /down /stop ?p=
     server.on("/up",   HTTP_GET, [](AsyncWebServerRequest* r) { motor::moveToPercent(0);   r->send(200, "text/plain", "ok"); });
