@@ -25,6 +25,7 @@ El objetivo es disponer de un dispositivo:
 | `firmware/`        | Proyecto PlatformIO con el firmware del ESP32                   |
 | `firmware/data/`   | Interfaz web servida desde LittleFS                             |
 | `3d-models/`       | Especificación de las piezas a imprimir                         |
+| `mobile/`          | App móvil React Native (Expo + NativeWind v5 + Zustand)         |
 | `companion/`       | App standalone Web Bluetooth para el primer arranque            |
 | `scripts/`         | Utilidades Python: descubrimiento, control, BLE provisioning    |
 | `examples/`        | Ejemplos de integración (Home Assistant, Node-RED, voz)         |
@@ -71,6 +72,7 @@ Tres formas de hablar con el nodo:
 - [x] Documentación de hardware y piezas 3D.
 - [x] Provisionamiento por **BLE GATT** + companion app Web Bluetooth.
 - [x] Sincronización **NTP** y programador horario interno (8 reglas semanales).
+- [x] **App móvil** React Native (Expo) para Android con multi-dispositivo.
 - [ ] Asistente de voz casero (wake word + STT local + intents → MQTT).
 - [ ] Sensor de luz / temperatura para automatizaciones por contexto.
 - [ ] Versión con motor DC + encoder para cortinas más pesadas.

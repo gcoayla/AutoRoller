@@ -1,0 +1,33 @@
+# Dependencias
+node_modules/
+
+# Expo
+.expo/
+.expo-shared/
+dist/
+web-build/
+
+# Builds nativos
+android/
+ios/
+
+# Variables de entorno
+.env*
+!.env.example
+
+# Logs
+*.log
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# Metro
+.metro-health-check*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# Mac
+.DS_Store
