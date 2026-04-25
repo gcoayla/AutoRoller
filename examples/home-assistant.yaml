@@ -1,0 +1,48 @@
+# AutoRoller — ejemplo de integración con Home Assistant vía MQTT
+#
+# Pega este bloque en tu `configuration.yaml` (o en un paquete dentro de
+# `packages/` si tienes esa estructura) y reinicia HA.
+
+mqtt:
+  cover:
+    - name: "Cortina salón"
+      unique_id: autoroller_salon
+      command_topic: "autoroller/salon/cmd/set"
+      set_position_topic: "autoroller/salon/cmd/set"
+      set_position_template: "{{ position }}"
+      position_topic: "autoroller/salon/state"
+      position_template: "{{ value_json.percent }}"
+      payload_open: "0"
+      payload_close: "100"
+      payload_stop: null
+      availability_topic: "autoroller/salon/availability"
+      payload_available: "online"
+      payload_not_available: "offline"
+      device_class: shade
+
+# Automatización de ejemplo: subir todas las cortinas al amanecer.
+automation:
+  - alias: "Subir cortinas al amanecer"
+    trigger:
+      - platform: sun
+        event: sunrise
+        offset: "+00:15:00"
+    action:
+      - service: mqtt.publish
+        data:
+          topic: "autoroller/salon/cmd/open"
+          payload: ""
+      - service: mqtt.publish
+        data:
+          topic: "autoroller/cocina/cmd/open"
+          payload: ""
+
+  - alias: "Bajar cortinas al ponerse el sol"
+    trigger:
+      - platform: sun
+        event: sunset
+    action:
+      - service: mqtt.publish
+        data:
+          topic: "autoroller/salon/cmd/close"
+          payload: ""

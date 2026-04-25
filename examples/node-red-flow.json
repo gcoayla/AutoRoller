@@ -1,0 +1,71 @@
+[
+    {
+        "id": "tab-autoroller",
+        "type": "tab",
+        "label": "AutoRoller",
+        "disabled": false,
+        "info": "Flujo de ejemplo de Node-RED para controlar AutoRoller vía HTTP."
+    },
+    {
+        "id": "inject-open",
+        "type": "inject",
+        "z": "tab-autoroller",
+        "name": "Subir cortina",
+        "props": [{ "p": "payload" }],
+        "payload": "",
+        "payloadType": "str",
+        "x": 140,
+        "y": 80,
+        "wires": [["http-open"]]
+    },
+    {
+        "id": "http-open",
+        "type": "http request",
+        "z": "tab-autoroller",
+        "name": "POST /api/open",
+        "method": "POST",
+        "ret": "txt",
+        "url": "http://autoroller-salon.local/api/open",
+        "x": 360,
+        "y": 80,
+        "wires": [["debug-out"]]
+    },
+    {
+        "id": "inject-close",
+        "type": "inject",
+        "z": "tab-autoroller",
+        "name": "Bajar cortina",
+        "props": [{ "p": "payload" }],
+        "payload": "",
+        "payloadType": "str",
+        "x": 140,
+        "y": 140,
+        "wires": [["http-close"]]
+    },
+    {
+        "id": "http-close",
+        "type": "http request",
+        "z": "tab-autoroller",
+        "name": "POST /api/close",
+        "method": "POST",
+        "ret": "txt",
+        "url": "http://autoroller-salon.local/api/close",
+        "x": 360,
+        "y": 140,
+        "wires": [["debug-out"]]
+    },
+    {
+        "id": "debug-out",
+        "type": "debug",
+        "z": "tab-autoroller",
+        "name": "respuesta",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "x": 600,
+        "y": 110,
+        "wires": []
+    }
+]

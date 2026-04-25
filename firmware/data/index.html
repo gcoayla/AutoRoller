@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0e1726" />
+    <title>AutoRoller</title>
+    <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+    <header>
+        <h1>AutoRoller</h1>
+        <span id="device-name" class="muted">—</span>
+    </header>
+
+    <main>
+        <section class="card">
+            <div class="curtain-viz" aria-hidden="true">
+                <div id="curtain" class="curtain"></div>
+                <div class="window"></div>
+            </div>
+
+            <div class="status-row">
+                <span id="state-pill" class="pill">·</span>
+                <span id="position-label" class="muted">0 %</span>
+            </div>
+
+            <div class="slider-row">
+                <input id="slider" type="range" min="0" max="100" step="1" value="0" />
+            </div>
+
+            <div class="button-row">
+                <button id="btn-up"   class="primary">▲ Subir</button>
+                <button id="btn-stop" class="warn">■ Parar</button>
+                <button id="btn-down" class="primary">▼ Bajar</button>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>Configuración</h2>
+            <details>
+                <summary>WiFi</summary>
+                <label>SSID
+                    <input id="wifi_ssid" type="text" autocomplete="off" />
+                </label>
+                <label>Contraseña
+                    <input id="wifi_password" type="password" autocomplete="new-password" />
+                </label>
+                <label>Hostname (mDNS: <code>.local</code>)
+                    <input id="hostname" type="text" />
+                </label>
+            </details>
+
+            <details>
+                <summary>MQTT</summary>
+                <label class="row">
+                    <input id="mqtt_enabled" type="checkbox" /> Activar MQTT
+                </label>
+                <label>Broker
+                    <input id="mqtt_host" type="text" placeholder="192.168.1.10" />
+                </label>
+                <label>Puerto
+                    <input id="mqtt_port" type="number" value="1883" />
+                </label>
+                <label>Usuario
+                    <input id="mqtt_user" type="text" />
+                </label>
+                <label>Contraseña
+                    <input id="mqtt_password" type="password" />
+                </label>
+                <label>Topic base
+                    <input id="mqtt_base_topic" type="text" value="autoroller" />
+                </label>
+            </details>
+
+            <details>
+                <summary>Motor</summary>
+                <label class="row">
+                    <input id="invert_direction" type="checkbox" /> Invertir dirección
+                </label>
+                <label class="row">
+                    <input id="use_endstops" type="checkbox" /> Usar finales de carrera
+                </label>
+                <label>Velocidad máx (Hz)
+                    <input id="max_speed_hz" type="number" />
+                </label>
+                <label>Aceleración (Hz/s)
+                    <input id="accel_hz_per_s" type="number" />
+                </label>
+            </details>
+
+            <div class="button-row">
+                <button id="btn-save"        class="primary">Guardar</button>
+                <button id="btn-calibrate"   class="ghost">Calibrar</button>
+                <button id="btn-set-here-0"  class="ghost">Marcar 0 aquí</button>
+                <button id="btn-set-here-max" class="ghost">Marcar máx. aquí</button>
+            </div>
+
+            <div class="button-row danger">
+                <button id="btn-forget-wifi"   class="danger">Olvidar WiFi</button>
+                <button id="btn-factory-reset" class="danger">Reset de fábrica</button>
+                <button id="btn-reboot"        class="ghost">Reiniciar</button>
+            </div>
+        </section>
+
+        <section class="card muted small">
+            <p>Firmware <span id="fw">·</span> · IP <span id="ip">·</span> · SSID <span id="ssid">·</span></p>
+            <p>API: <a href="/api/status">/api/status</a> · WebSocket en <code>/ws</code></p>
+        </section>
+    </main>
+
+    <script src="/script.js"></script>
+</body>
+</html>
