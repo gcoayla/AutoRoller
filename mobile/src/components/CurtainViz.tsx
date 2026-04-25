@@ -36,7 +36,7 @@ export function CurtainViz({ percent, tint = '#4EA1FF', height = 200 }: Props) {
                 colors={['#1B2D4F', '#2C4A7C', '#1B2D4F']}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 1 }}
-                style={{ position: 'absolute', inset: 0 } as any}
+                style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
             />
 
             {/* marco */}
@@ -82,7 +82,7 @@ export function CurtainViz({ percent, tint = '#4EA1FF', height = 200 }: Props) {
                     colors={[tint + 'CC', tint + '80', tint + '60']}
                     start={{ x: 0, y: 0 }}
                     end={{ x: 1, y: 0 }}
-                    style={{ position: 'absolute', inset: 0 } as any}
+                    style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
                 />
                 {/* listas verticales tipo persiana */}
                 {Array.from({ length: 16 }).map((_, i) => (

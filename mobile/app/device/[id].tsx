@@ -27,11 +27,17 @@ type Tab = 'control' | 'sched' | 'config' | 'adv';
 export default function DeviceDetail() {
     const { id } = useLocalSearchParams<{ id: string }>();
     const device  = useDevices((s) => s.devices.find((d) => d.id === id));
-    const status  = useDevices((s) => s.statuses[String(id)]);
-    const online  = useDevices((s) => s.onlineMap[String(id)]);
-    const remove  = useDevices((s) => s.remove);
-    const fav     = useDevices((s) => s.toggleFavorite);
-    const toast   = useUi((s) => s.push);
+    // Selectores granulares (Zustand v5 ya no admite equalityFn).
+    const percent     = useDevices((s) => s.statuses[String(id)]?.percent ?? 0);
+    const stState     = useDevices((s) => s.statuses[String(id)]?.state);
+    const calibrated  = useDevices((s) => s.statuses[String(id)]?.calibrated);
+    const wifi_rssi   = useDevices((s) => s.statuses[String(id)]?.wifi_rssi);
+    const wifi_ip     = useDevices((s) => s.statuses[String(id)]?.wifi_ip);
+    const status     = { percent, state: stState, calibrated, wifi_rssi, wifi_ip };
+    const online     = useDevices((s) => s.onlineMap[String(id)]);
+    const remove     = useDevices((s) => s.remove);
+    const fav        = useDevices((s) => s.toggleFavorite);
+    const toast      = useUi((s) => s.push);
 
     const [tab, setTab] = useState<Tab>('control');
 
@@ -72,7 +78,7 @@ export default function DeviceDetail() {
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 60 }}>
-                {tab === 'control' && <ControlTab host={host} percent={status?.percent ?? 0} tint={tint} />}
+                {tab === 'control' && <ControlTab host={host} percent={percent} tint={tint} />}
                 {tab === 'sched'   && <SchedTab   host={host} />}
                 {tab === 'config'  && <ConfigTab  host={host} />}
                 {tab === 'adv'     && <AdvancedTab host={host} deviceId={device.id} />}

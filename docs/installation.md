@@ -85,8 +85,9 @@ protoboard siguiendo el pinout de [`docs/hardware.md`](hardware.md).
 2. Edita `firmware/src/config.h` si has cambiado pines o quieres invertir la
    dirección.
 3. Conecta el ESP32 por USB.
-4. Compila y sube:
+4. Compila y sube (todos los comandos `pio` se ejecutan desde `firmware/`):
    ```bash
+   cd firmware
    pio run -e esp32dev -t upload
    pio run -e esp32dev -t uploadfs   # sube la web embebida (LittleFS)
    ```

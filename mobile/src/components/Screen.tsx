@@ -17,7 +17,7 @@ export function Screen({ children, flush }: Props) {
             <LinearGradient
                 colors={['#050811', '#080F22', '#050811']}
                 locations={[0, 0.4, 1]}
-                style={{ position: 'absolute', inset: 0 } as any}
+                style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}
             />
             {/* Halo decorativo (blob) */}
             <View

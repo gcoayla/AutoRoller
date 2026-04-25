@@ -344,6 +344,12 @@ void begin(storage::Settings& settings) {
     start();
 }
 
+// Singletons de callbacks: NimBLE-Arduino guarda el puntero pero no asume
+// ownership. Usamos instancias estáticas para evitar leaks tras stop()/start().
+static ServerCB     s_serverCB;
+static RequestCB    s_requestCB;
+static StatusReadCB s_statusCB;
+
 void start() {
     if (s_initialized) return;
 
@@ -362,14 +368,14 @@ void start() {
     }
 
     s_server = NimBLEDevice::createServer();
-    s_server->setCallbacks(new ServerCB());
+    s_server->setCallbacks(&s_serverCB);
 
     NimBLEService* svc = s_server->createService(BLE_SVC_UUID);
 
     s_chrReq  = svc->createCharacteristic(
         BLE_CHR_REQUEST_UUID,
         NIMBLE_PROPERTY::WRITE | NIMBLE_PROPERTY::WRITE_NR);
-    s_chrReq->setCallbacks(new RequestCB());
+    s_chrReq->setCallbacks(&s_requestCB);
 
     s_chrResp = svc->createCharacteristic(
         BLE_CHR_RESPONSE_UUID,
@@ -378,7 +384,7 @@ void start() {
     s_chrStat = svc->createCharacteristic(
         BLE_CHR_STATUS_UUID,
         NIMBLE_PROPERTY::READ | NIMBLE_PROPERTY::NOTIFY);
-    s_chrStat->setCallbacks(new StatusReadCB());
+    s_chrStat->setCallbacks(&s_statusCB);
     {
         String j = statusJson();
         s_chrStat->setValue((uint8_t*)j.c_str(), j.length());

@@ -114,7 +114,8 @@ async def cmd_scan(args):
         print("(ningún nodo AutoRoller cercano)")
         return 1
     for d in found:
-        print(f"  {d.name}  RSSI={d.rssi:>4}  addr={d.address}")
+        rssi = "n/a" if d.rssi is None else f"{d.rssi:>4}"
+        print(f"  {d.name}  RSSI={rssi}  addr={d.address}")
     return 0
 
 

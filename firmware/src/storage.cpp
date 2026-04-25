@@ -1,14 +1,26 @@
 #include "storage.h"
 
 #include <Preferences.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/semphr.h>
 
 #include "config.h"
 
 namespace storage {
 
-static Preferences prefs;
+static Preferences         prefs;
+// Recursivo: save() llama internamente a saveSchedules() que también toma
+// la misma cerradura.
+static SemaphoreHandle_t   s_mtx = nullptr;
+
+struct Lock {
+    Lock()  { if (s_mtx) xSemaphoreTakeRecursive(s_mtx, portMAX_DELAY); }
+    ~Lock() { if (s_mtx) xSemaphoreGiveRecursive(s_mtx); }
+};
 
 void begin() {
+    if (!s_mtx) s_mtx = xSemaphoreCreateRecursiveMutex();
+    Lock l;
     prefs.begin(NVS_NAMESPACE, false);
 }
 
@@ -22,6 +34,7 @@ static String defaultHostname() {
 }
 
 Settings load() {
+    Lock l;
     Settings s;
     s.hostname        = prefs.getString("hostname", defaultHostname());
     s.wifi_ssid       = prefs.getString("wifi_ssid", "");
@@ -59,6 +72,7 @@ Settings load() {
 }
 
 void save(const Settings& s) {
+    Lock l;
     prefs.putString("hostname",  s.hostname);
     prefs.putString("wifi_ssid", s.wifi_ssid);
     prefs.putString("wifi_pass", s.wifi_password);
@@ -90,14 +104,17 @@ void save(const Settings& s) {
 }
 
 void saveSchedules(const Settings& s) {
+    Lock l;
     prefs.putBytes("sched", &s.schedules, sizeof(s.schedules));
 }
 
 void savePosition(int32_t position) {
+    Lock l;
     prefs.putInt("cur_pos", position);
 }
 
 void factoryReset() {
+    Lock l;
     prefs.clear();
 }
 

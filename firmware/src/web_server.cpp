@@ -1,5 +1,7 @@
 #include "web_server.h"
 
+#include <algorithm>
+
 #include <ArduinoJson.h>
 #include <ArduinoOTA.h>
 #include <AsyncJson.h>
@@ -194,9 +196,21 @@ static void handleBlePost(AsyncWebServerRequest* req, JsonVariant& body) {
     req->send(200, "application/json", "{\"ok\":true}");
 }
 
+// Escaneo no bloqueante: si hay un escaneo en curso, devolvemos 202 y el
+// cliente reintenta. Si ya tenemos resultados, los servimos.
 static void handleScan(AsyncWebServerRequest* req) {
-    int n = WiFi.scanNetworks(false, true);
-    if (n < 0) n = 0;
+    int n = WiFi.scanComplete();
+    if (n == WIFI_SCAN_RUNNING) {
+        req->send(202, "application/json", "{\"running\":true}");
+        return;
+    }
+    if (n == WIFI_SCAN_FAILED || n < 0) {
+        // Lanzamos uno asíncrono y avisamos al cliente.
+        WiFi.scanNetworks(/*async*/ true, /*hidden*/ true);
+        req->send(202, "application/json", "{\"running\":true}");
+        return;
+    }
+
     JsonDocument doc;
     JsonArray arr = doc["networks"].to<JsonArray>();
     int max = n > 16 ? 16 : n;
@@ -224,8 +238,8 @@ static void handleConfigPost(AsyncWebServerRequest* req, JsonVariant& body) {
     if (obj["mqtt_password"].is<const char*>())     s_settings->mqtt_password   = obj["mqtt_password"].as<String>();
     if (obj["mqtt_base_topic"].is<const char*>())   s_settings->mqtt_base_topic = obj["mqtt_base_topic"].as<String>();
     if (obj["invert_direction"].is<bool>())         s_settings->invert_direction = obj["invert_direction"].as<bool>();
-    if (obj["max_speed_hz"].is<int>())              s_settings->max_speed_hz    = obj["max_speed_hz"].as<int>();
-    if (obj["accel_hz_per_s"].is<int>())            s_settings->accel_hz_per_s  = obj["accel_hz_per_s"].as<int>();
+    if (obj["max_speed_hz"].is<int>())              s_settings->max_speed_hz    = std::min(50000, std::max(100, obj["max_speed_hz"].as<int>()));
+    if (obj["accel_hz_per_s"].is<int>())            s_settings->accel_hz_per_s  = std::min(100000, std::max(100, obj["accel_hz_per_s"].as<int>()));
     if (obj["use_endstops"].is<bool>())             s_settings->use_endstops    = obj["use_endstops"].as<bool>();
     if (obj["ble_enabled"].is<bool>())              s_settings->ble_enabled     = obj["ble_enabled"].as<bool>();
     if (obj["ble_policy"].is<int>())                s_settings->ble_policy      = obj["ble_policy"].as<int>();
@@ -237,10 +251,25 @@ static void handleConfigPost(AsyncWebServerRequest* req, JsonVariant& body) {
     req->send(200, "application/json", "{\"ok\":true}");
 }
 
+// Acción diferida: AsyncWebServer NO permite bloquear en handlers, así que
+// disparamos una tarea de un solo uso que duerme y luego ejecuta la acción.
+static void scheduleAfter(uint32_t ms, void (*fn)()) {
+    struct Job { uint32_t ms; void (*fn)(); };
+    Job* j = new Job{ ms, fn };
+    xTaskCreate(
+        [](void* arg) {
+            auto* j = static_cast<Job*>(arg);
+            vTaskDelay(pdMS_TO_TICKS(j->ms));
+            j->fn();
+            delete j;
+            vTaskDelete(nullptr);
+        },
+        "deferred", 2048, j, 1, nullptr);
+}
+
 static void handleReboot(AsyncWebServerRequest* req) {
     req->send(200, "application/json", "{\"ok\":true,\"rebooting\":true}");
-    delay(200);
-    ESP.restart();
+    scheduleAfter(200, []() { ESP.restart(); });
 }
 
 static void handleForgetWifi(AsyncWebServerRequest* req) {
@@ -248,15 +277,13 @@ static void handleForgetWifi(AsyncWebServerRequest* req) {
     s_settings->wifi_password = "";
     storage::save(*s_settings);
     req->send(200, "application/json", "{\"ok\":true,\"portal\":true}");
-    delay(200);
-    netcfg::forcePortal();
+    scheduleAfter(200, []() { netcfg::forcePortal(); });
 }
 
 static void handleFactoryReset(AsyncWebServerRequest* req) {
     storage::factoryReset();
     req->send(200, "application/json", "{\"ok\":true,\"rebooting\":true}");
-    delay(200);
-    ESP.restart();
+    scheduleAfter(200, []() { ESP.restart(); });
 }
 
 // ---- arranque --------------------------------------------------------------
@@ -314,7 +341,7 @@ void begin(storage::Settings& settings) {
             bool ok = !Update.hasError();
             req->send(ok ? 200 : 500, "application/json",
                       ok ? "{\"ok\":true,\"rebooting\":true}" : "{\"ok\":false}");
-            if (ok) { delay(200); ESP.restart(); }
+            if (ok) scheduleAfter(200, []() { ESP.restart(); });
         },
         [](AsyncWebServerRequest* /*req*/, String /*filename*/, size_t index,
            uint8_t* data, size_t len, bool final) {

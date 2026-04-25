@@ -63,14 +63,17 @@ def parse(text: str) -> tuple[str, str | None, str]:
             room = v
             break
 
-    # "al N por ciento" / "al N%"
-    m = re.search(r"(\d{1,3})\s*(?:%|por\s*ciento)?", text)
-    if m and ("ciento" in text or "%" in text or "por ciento" in text):
+    # "al N %", "al N por ciento" — solo si va precedido de "al" o termina en %.
+    m = re.search(r"\bal\s+(\d{1,3})(?:\s*%|\s*por\s*ciento)?\b", text)
+    if not m:
+        m = re.search(r"(\d{1,3})\s*%", text)
+    if m:
         v = max(0, min(100, int(m.group(1))))
         return ("set", str(v), room)
 
+    # Variantes con número escrito ("al cincuenta por ciento").
     for word, val in NUMBERS_ES.items():
-        if word in text and ("ciento" in text or "por ciento" in text):
+        if re.search(rf"\bal\s+{word}\s+por\s+ciento\b", text):
             return ("set", str(val), room)
 
     if any(k in text for k in ("sube", "subir", "abre", "abrir", "arriba")):

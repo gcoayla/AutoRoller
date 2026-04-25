@@ -40,6 +40,8 @@
             <h2>Configuración</h2>
             <details>
                 <summary>WiFi</summary>
+                <button id="btn-scan-wifi" class="ghost" type="button">Buscar redes</button>
+                <div id="wifi-list"></div>
                 <label>SSID
                     <input id="wifi_ssid" type="text" autocomplete="off" />
                 </label>
@@ -104,7 +106,14 @@
         </section>
 
         <section class="card muted small">
-            <p>Firmware <span id="fw">·</span> · IP <span id="ip">·</span> · SSID <span id="ssid">·</span></p>
+            <p>
+                Firmware <span id="fw">·</span> · IP <span id="ip">·</span>
+                · SSID <span id="ssid">·</span> · RSSI <span id="rssi">·</span> dBm
+            </p>
+            <p>
+                Hora del nodo <span id="time">—</span> · BLE <span id="ble">—</span>
+                · Uptime <span id="uptime">—</span>
+            </p>
             <p>API: <a href="/api/status">/api/status</a> · WebSocket en <code>/ws</code></p>
         </section>
     </main>

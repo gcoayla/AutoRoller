@@ -44,12 +44,18 @@ void begin(const storage::Settings& s) {
     pinMode(PIN_EN, OUTPUT);
     enableDriver(false);  // arranca deshabilitado para no calentar al motor
 
-    if (PIN_ENDSTOP_TOP >= 0) {
-        pinMode(PIN_ENDSTOP_TOP, ENDSTOP_ACTIVE_LOW ? INPUT_PULLUP : INPUT);
-    }
-    if (PIN_ENDSTOP_BOTTOM >= 0) {
-        pinMode(PIN_ENDSTOP_BOTTOM, ENDSTOP_ACTIVE_LOW ? INPUT_PULLUP : INPUT);
-    }
+    // Nota: GPIO 34-39 del ESP32 son input-only y NO tienen pull-ups internos,
+    // así que aquí no pedimos INPUT_PULLUP aunque ENDSTOP_ACTIVE_LOW esté
+    // activado: en esos pines hay que poner una resistencia 10 kΩ a 3V3
+    // externa. En GPIOs normales (≤33), si ENDSTOP_ACTIVE_LOW está activo,
+    // sí pedimos pull-up interno.
+    auto pickInputMode = [](int pin) -> int {
+        if (!ENDSTOP_ACTIVE_LOW) return INPUT;
+        if (pin >= 34 && pin <= 39) return INPUT;     // input-only, sin pull
+        return INPUT_PULLUP;
+    };
+    if (PIN_ENDSTOP_TOP    >= 0) pinMode(PIN_ENDSTOP_TOP,    pickInputMode(PIN_ENDSTOP_TOP));
+    if (PIN_ENDSTOP_BOTTOM >= 0) pinMode(PIN_ENDSTOP_BOTTOM, pickInputMode(PIN_ENDSTOP_BOTTOM));
     if (PIN_MS1 >= 0) { pinMode(PIN_MS1, OUTPUT); digitalWrite(PIN_MS1, HIGH); }
     if (PIN_MS2 >= 0) { pinMode(PIN_MS2, OUTPUT); digitalWrite(PIN_MS2, HIGH); }
 

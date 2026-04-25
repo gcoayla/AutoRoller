@@ -100,7 +100,7 @@
                 <label>Usuario</label>
                 <input id="mqtt_user" type="text" />
                 <label>Contraseña</label>
-                <input id="mqtt_pass" type="password" />
+                <input id="mqtt_password" type="password" />
                 <label>Topic base</label>
                 <input id="mqtt_base" type="text" value="autoroller" />
                 <p class="row">
@@ -288,7 +288,7 @@
         op: "set_mqtt",
         enabled: $("mqtt_enabled").checked,
         host: $("mqtt_host").value, port: Number($("mqtt_port").value),
-        user: $("mqtt_user").value, password: $("mqtt_pass").value,
+        user: $("mqtt_user").value, password: $("mqtt_password").value,
         base_topic: $("mqtt_base").value,
     });
     $("btn-set-time").onclick   = () => sendCmd({

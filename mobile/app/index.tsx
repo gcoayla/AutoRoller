@@ -19,8 +19,15 @@ import type { SavedDevice } from '@/lib/types';
 
 function DeviceRow({ device }: { device: SavedDevice }) {
     useDeviceStatus(device);
-    const status = useDevices((s) => s.statuses[device.id]);
-    const online = useDevices((s) => s.onlineMap[device.id]);
+    // Selectores granulares: en Zustand v5 cada selector retorna primitivas
+    // referencialmente estables, así que sólo re-renderiza cuando cambian
+    // las que esta tarjeta usa.
+    const percent    = useDevices((s) => s.statuses[device.id]?.percent ?? 0);
+    const state      = useDevices((s) => s.statuses[device.id]?.state);
+    const calibrated = useDevices((s) => s.statuses[device.id]?.calibrated);
+    const wifi_rssi  = useDevices((s) => s.statuses[device.id]?.wifi_rssi);
+    const online     = useDevices((s) => s.onlineMap[device.id]);
+    const status = { percent, state, calibrated, wifi_rssi };
     const toast  = useUi((s) => s.push);
     const host   = device.ip || `${device.hostname}.local`;
 

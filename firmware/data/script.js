@@ -17,14 +17,26 @@
 
     const get = (path) => fetch(path).then((r) => r.json());
 
+    const fmtUptime = (sec) => {
+        if (sec == null) return "—";
+        const d = Math.floor(sec / 86400);
+        const h = Math.floor((sec % 86400) / 3600);
+        const m = Math.floor((sec % 3600) / 60);
+        return d ? `${d}d ${h}h ${m}m` : h ? `${h}h ${m}m` : `${m}m`;
+    };
+
     // ---- render
     const renderState = (s) => {
         if (!s) return;
         lastState = s;
         $("device-name").textContent = s.device || "—";
-        $("fw").textContent  = s.fw  || "—";
-        $("ip").textContent  = s.wifi_ip   || "—";
+        $("fw").textContent   = s.fw  || "—";
+        $("ip").textContent   = s.wifi_ip   || "—";
         $("ssid").textContent = s.wifi_ssid || "—";
+        $("rssi").textContent = s.wifi_rssi != null ? s.wifi_rssi : "—";
+        $("time").textContent = s.time || "—";
+        $("ble").textContent  = s.ble_on ? (s.ble_conn ? "conectado" : "anunciando") : "off";
+        $("uptime").textContent = fmtUptime(s.uptime_s);
 
         $("position-label").textContent = `${s.percent ?? 0} %`;
         $("curtain").style.height = `${s.percent ?? 0}%`;
@@ -128,4 +140,37 @@
         await post("/api/factory-reset");
     });
     $("btn-reboot").addEventListener("click", () => post("/api/reboot"));
+
+    // ---- escaneo WiFi (botón "Buscar redes")
+    const renderWifiList = (nets) => {
+        const c = $("wifi-list");
+        c.innerHTML = "";
+        if (!nets || !nets.length) {
+            c.textContent = "(sin redes)";
+            return;
+        }
+        for (const n of nets) {
+            const row = document.createElement("button");
+            row.type = "button";
+            row.className = "ghost";
+            row.style.display = "block";
+            row.style.width = "100%";
+            row.style.textAlign = "left";
+            row.style.margin = "4px 0";
+            const lock = n.open ? "" : "🔒 ";
+            row.textContent = `${lock}${n.ssid || "(oculta)"}  ${n.rssi} dBm`;
+            row.onclick = () => { $("wifi_ssid").value = n.ssid; };
+            c.appendChild(row);
+        }
+    };
+    $("btn-scan-wifi").addEventListener("click", async () => {
+        $("wifi-list").textContent = "Buscando…";
+        // El endpoint es asíncrono: si devuelve 202, reintentamos un par de veces.
+        for (let i = 0; i < 5; i++) {
+            const r = await fetch("/api/scan");
+            if (r.status === 200) { renderWifiList((await r.json()).networks); return; }
+            await new Promise((res) => setTimeout(res, 1200));
+        }
+        $("wifi-list").textContent = "Tiempo agotado.";
+    });
 })();
