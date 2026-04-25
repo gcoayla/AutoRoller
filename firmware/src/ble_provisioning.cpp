@@ -6,6 +6,7 @@
 
 #include "config.h"
 #include "motor_controller.h"
+#include "settings_lock.h"
 #include "wifi_manager.h"
 
 namespace bleprov {
@@ -134,9 +135,12 @@ static void opSetWifi(JsonDocument& req, JsonDocument& resp) {
         resp["error"] = "ssid requerido";
         return;
     }
-    s_settings->wifi_ssid     = ssid;
-    s_settings->wifi_password = pass;
-    storage::save(*s_settings);
+    {
+        SettingsLock l;
+        s_settings->wifi_ssid     = ssid;
+        s_settings->wifi_password = pass;
+        storage::save(*s_settings);
+    }
     resp["op"] = "set_wifi";
     resp["ok"] = true;
     resp["msg"] = "Credenciales guardadas, intentando conectar";
@@ -146,6 +150,7 @@ static void opSetWifi(JsonDocument& req, JsonDocument& resp) {
 }
 
 static void opSetMqtt(JsonDocument& req, JsonDocument& resp) {
+    SettingsLock l;
     if (req["enabled"].is<bool>())  s_settings->mqtt_enabled    = req["enabled"].as<bool>();
     if (req["host"].is<const char*>()) s_settings->mqtt_host    = req["host"].as<String>();
     if (req["port"].is<int>())      s_settings->mqtt_port       = req["port"].as<int>();
@@ -163,12 +168,14 @@ static void opSetHostname(JsonDocument& req, JsonDocument& resp) {
     if (h.length() == 0 || h.length() > 32) {
         resp["ok"] = false; resp["error"] = "hostname inválido"; return;
     }
+    SettingsLock l;
     s_settings->hostname = h;
     storage::save(*s_settings);
     resp["op"] = "set_hostname"; resp["ok"] = true;
 }
 
 static void opSetMotor(JsonDocument& req, JsonDocument& resp) {
+    SettingsLock l;
     if (req["invert_direction"].is<bool>())  s_settings->invert_direction = req["invert_direction"].as<bool>();
     if (req["max_speed_hz"].is<int>())       s_settings->max_speed_hz     = req["max_speed_hz"].as<int>();
     if (req["accel_hz_per_s"].is<int>())     s_settings->accel_hz_per_s   = req["accel_hz_per_s"].as<int>();
@@ -178,6 +185,7 @@ static void opSetMotor(JsonDocument& req, JsonDocument& resp) {
 }
 
 static void opSetTime(JsonDocument& req, JsonDocument& resp) {
+    SettingsLock l;
     if (req["enabled"].is<bool>())             s_settings->ntp_enabled = req["enabled"].as<bool>();
     if (req["server"].is<const char*>())       s_settings->ntp_server  = req["server"].as<String>();
     if (req["timezone"].is<const char*>())     s_settings->timezone    = req["timezone"].as<String>();
@@ -222,6 +230,7 @@ static void opSetSchedule(JsonDocument& req, JsonDocument& resp) {
     if (i < 0 || i >= (int)SCHEDULER_MAX_ENTRIES) {
         resp["ok"] = false; resp["error"] = "índice fuera de rango"; return;
     }
+    SettingsLock l;
     auto& e = s_settings->schedules[i];
     e.enabled    = req["enabled"]    | e.enabled;
     e.hour       = req["hour"]       | e.hour;
@@ -237,6 +246,7 @@ static void opDelSchedule(JsonDocument& req, JsonDocument& resp) {
     if (i < 0 || i >= (int)SCHEDULER_MAX_ENTRIES) {
         resp["ok"] = false; resp["error"] = "índice fuera de rango"; return;
     }
+    SettingsLock l;
     s_settings->schedules[i] = storage::ScheduleEntry{};
     storage::saveSchedules(*s_settings);
     resp["op"] = "del_schedule"; resp["ok"] = true;

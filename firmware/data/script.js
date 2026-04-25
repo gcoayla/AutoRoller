@@ -8,14 +8,39 @@
     let lastState = null;
 
     // ---- helpers
+    const TOKEN_KEY = "autoroller.token";
+    const getToken = () => localStorage.getItem(TOKEN_KEY) || "";
+    const setToken = (t) => {
+        if (t) localStorage.setItem(TOKEN_KEY, t);
+        else localStorage.removeItem(TOKEN_KEY);
+    };
+    const authHeaders = () => {
+        const t = getToken();
+        return t ? { "X-AutoRoller-Token": t } : {};
+    };
+
+    async function call(path, init = {}) {
+        const headers = { ...authHeaders(), ...(init.headers || {}) };
+        const r = await fetch(path, { ...init, headers });
+        if (r.status === 401) {
+            const t = prompt("Este nodo requiere un token de API. Introdúcelo:");
+            if (t) {
+                setToken(t);
+                return call(path, init);
+            }
+            throw new Error("Sin token");
+        }
+        return r;
+    }
+
     const post = (path, body) =>
-        fetch(path, {
+        call(path, {
             method: "POST",
             headers: body ? { "Content-Type": "application/json" } : {},
             body: body ? JSON.stringify(body) : undefined,
         }).then((r) => r.json());
 
-    const get = (path) => fetch(path).then((r) => r.json());
+    const get = (path) => call(path).then((r) => r.json());
 
     const fmtUptime = (sec) => {
         if (sec == null) return "—";

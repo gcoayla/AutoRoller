@@ -22,7 +22,10 @@ import { useUi } from '@/store/ui';
 type Step = 'connecting' | 'identity' | 'wifi' | 'extras' | 'done';
 
 export default function BleSetupScreen() {
-    const { id, name } = useLocalSearchParams<{ id: string; name: string }>();
+    const { id, name, existing } = useLocalSearchParams<{
+        id: string; name: string; existing?: string;
+    }>();
+    const isReconfig = !!existing;
     const [step, setStep] = useState<Step>('connecting');
     const [session, setSession] = useState<BleSession | null>(null);
     const [hostname, setHostname] = useState(String(name || 'autoroller'));
@@ -39,8 +42,9 @@ export default function BleSetupScreen() {
     const [tz, setTz]             = useState('CET-1CEST,M3.5.0/2,M10.5.0/3');
     const [resultIp, setResultIp] = useState<string | undefined>();
 
-    const add = useDevices((s) => s.add);
-    const toast = useUi((s) => s.push);
+    const add    = useDevices((s) => s.add);
+    const update = useDevices((s) => s.update);
+    const toast  = useUi((s) => s.push);
 
     // ---- conexión inicial -------------------------------------------------
     useEffect(() => {
@@ -49,7 +53,32 @@ export default function BleSetupScreen() {
             try {
                 s = await BleSession.connect(String(id));
                 setSession(s);
-                setStep('identity');
+                // En reconfiguración saltamos directo a "wifi" tras leer la
+                // config actual y pre-rellenar campos.
+                if (isReconfig) {
+                    try {
+                        const cfg: any = await s.getConfig();
+                        if (cfg?.hostname) setHostname(cfg.hostname);
+                        if (cfg?.mqtt_enabled) {
+                            setMqttOn(true);
+                            if (cfg.mqtt_host)       setMqttHost(cfg.mqtt_host);
+                            if (cfg.mqtt_port)       setMqttPort(String(cfg.mqtt_port));
+                            if (cfg.mqtt_user)       setMqttUser(cfg.mqtt_user);
+                            if (cfg.mqtt_base_topic) setMqttBase(cfg.mqtt_base_topic);
+                        }
+                        if (cfg?.timezone) setTz(cfg.timezone);
+                    } catch {}
+                    setStep('wifi');
+                    // disparamos el escaneo
+                    s.scanWifi().then((r: any) => {
+                        const list = (r.networks || []).sort(
+                            (a: any, b: any) => b.rssi - a.rssi,
+                        );
+                        setNetworks(list);
+                    }).catch(() => {});
+                } else {
+                    setStep('identity');
+                }
             } catch (e: any) {
                 toast(`No se pudo conectar: ${e.message}`, 'error');
                 router.back();
@@ -58,7 +87,7 @@ export default function BleSetupScreen() {
         return () => {
             s?.disconnect().catch(() => {});
         };
-    }, [id, toast]);
+    }, [id, toast, isReconfig]);
 
     // ---- escaneo WiFi -----------------------------------------------------
     const scanWifi = async () => {
@@ -137,6 +166,17 @@ export default function BleSetupScreen() {
     };
 
     const finish = () => {
+        if (isReconfig && existing) {
+            // Actualizamos el dispositivo existente en lugar de crear otro.
+            update(String(existing), {
+                hostname,
+                ip: resultIp,
+                bleId: String(id),
+            });
+            toast('Reconfigurado', 'ok');
+            router.replace(`/device/${existing}`);
+            return;
+        }
         const localId = `ble-${id}`;
         add({
             id: localId,

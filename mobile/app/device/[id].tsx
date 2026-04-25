@@ -16,9 +16,9 @@ import { Section } from '@/components/Section';
 import { StatusPill } from '@/components/StatusPill';
 import { Switch } from '@/components/Switch';
 import { useDeviceStatus } from '@/hooks/useDeviceStatus';
-import { api } from '@/lib/http';
+import { apiFor, hostOf } from '@/lib/device-client';
 import { colors } from '@/lib/colors';
-import type { DeviceConfig, Schedule } from '@/lib/types';
+import type { DeviceConfig, SavedDevice, Schedule } from '@/lib/types';
 import { useDevices } from '@/store/devices';
 import { useUi } from '@/store/ui';
 
@@ -50,14 +50,13 @@ export default function DeviceDetail() {
 
     if (!device) return null;
 
-    const host = device.ip || `${device.hostname}.local`;
     const tint = device.color || colors.primary;
 
     return (
         <Screen>
             <Header
                 hostname={device.hostname}
-                host={host}
+                host={hostOf(device)}
                 status={status}
                 online={online}
                 fav={device.favorite}
@@ -78,10 +77,10 @@ export default function DeviceDetail() {
             </View>
 
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 60 }}>
-                {tab === 'control' && <ControlTab host={host} percent={percent} tint={tint} />}
-                {tab === 'sched'   && <SchedTab   host={host} />}
-                {tab === 'config'  && <ConfigTab  host={host} />}
-                {tab === 'adv'     && <AdvancedTab host={host} deviceId={device.id} />}
+                {tab === 'control' && <ControlTab device={device} percent={percent} tint={tint} />}
+                {tab === 'sched'   && <SchedTab   device={device} />}
+                {tab === 'config'  && <ConfigTab  device={device} />}
+                {tab === 'adv'     && <AdvancedTab device={device} />}
             </ScrollView>
         </Screen>
     );
@@ -148,9 +147,10 @@ function TabBtn({
 // ---------------------------------------------------------------------------
 //  Control
 // ---------------------------------------------------------------------------
-function ControlTab({ host, percent, tint }: { host: string; percent: number; tint: string }) {
+function ControlTab({ device, percent, tint }: { device: SavedDevice; percent: number; tint: string }) {
     const [local, setLocal] = useState<number | null>(null);
     const toast = useUi((s) => s.push);
+    const client = apiFor(device);
 
     useEffect(() => { if (local !== null) setLocal(null); /* reset al cambiar % real */ }, [percent]);
 
@@ -158,8 +158,8 @@ function ControlTab({ host, percent, tint }: { host: string; percent: number; ti
 
     const send = async (a: 'open' | 'close' | 'stop' | 'set', value?: number) => {
         try {
-            if (a === 'set' && value !== undefined) await api.set(host, value);
-            else if (a !== 'set') await api[a](host);
+            if (a === 'set' && value !== undefined) await client.set(value);
+            else if (a !== 'set') await client[a]();
             toast('OK', 'ok');
         } catch (e: any) {
             toast(e.message, 'error');
@@ -203,17 +203,18 @@ function ControlTab({ host, percent, tint }: { host: string; percent: number; ti
 // ---------------------------------------------------------------------------
 const DAY_LABELS = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 
-function SchedTab({ host }: { host: string }) {
+function SchedTab({ device }: { device: SavedDevice }) {
     const [list, setList] = useState<Schedule[] | null>(null);
     const [time, setTime] = useState<string>('');
     const [busy, setBusy] = useState(false);
     const [editing, setEditing] = useState<Schedule | null>(null);
     const toast = useUi((s) => s.push);
+    const client = apiFor(device);
 
     const reload = async () => {
         setBusy(true);
         try {
-            const r = await api.schedules(host);
+            const r = await client.schedules();
             setList(r.schedules);
             setTime(r.time);
         } catch (e: any) {
@@ -223,11 +224,11 @@ function SchedTab({ host }: { host: string }) {
         }
     };
 
-    useEffect(() => { reload(); }, [host]);
+    useEffect(() => { reload(); }, [device.id, device.ip, device.apiToken]);
 
     const saveOne = async (s: Schedule) => {
         try {
-            await api.setSchedule(host, s);
+            await client.setSchedule(s);
             toast('Programación guardada', 'ok');
             setEditing(null);
             reload();
@@ -238,7 +239,7 @@ function SchedTab({ host }: { host: string }) {
 
     const deleteOne = async (i: number) => {
         try {
-            await api.deleteSchedule(host, i);
+            await client.deleteSchedule(i);
             reload();
         } catch (e: any) {
             toast(e.message, 'error');
@@ -409,19 +410,21 @@ function clamp(n: number, min: number, max: number) {
 // ---------------------------------------------------------------------------
 //  Ajustes (WiFi / MQTT / Motor / NTP)
 // ---------------------------------------------------------------------------
-function ConfigTab({ host }: { host: string }) {
+function ConfigTab({ device }: { device: SavedDevice }) {
     const [cfg, setCfg] = useState<DeviceConfig | null>(null);
     const [busy, setBusy] = useState(false);
     const toast = useUi((s) => s.push);
+    const client = apiFor(device);
+    const updateDevice = useDevices((s) => s.update);
 
     const reload = async () => {
         try {
-            setCfg(await api.config(host));
+            setCfg(await client.config());
         } catch (e: any) {
             toast(e.message, 'error');
         }
     };
-    useEffect(() => { reload(); }, [host]);
+    useEffect(() => { reload(); }, [device.id, device.ip, device.apiToken]);
 
     const save = async (patch: DeviceConfig) => {
         if (!cfg) return;
@@ -429,7 +432,12 @@ function ConfigTab({ host }: { host: string }) {
         setCfg(next);
         setBusy(true);
         try {
-            await api.setConfig(host, patch);
+            await client.setConfig(patch);
+            // Si se cambió el token, lo guardamos en el SavedDevice para
+            // que las siguientes peticiones lo usen.
+            if (patch.api_token !== undefined) {
+                updateDevice(device.id, { apiToken: patch.api_token });
+            }
             toast('Guardado', 'ok');
         } catch (e: any) {
             toast(e.message, 'error');
@@ -495,7 +503,7 @@ function ConfigTab({ host }: { host: string }) {
                 })} />
             </Card>
 
-            <Card>
+            <Card className="mb-3">
                 <Section title="Hora / NTP" />
                 <Switch label="Sincronizar por NTP" value={!!cfg.ntp_enabled} onValueChange={(v) => save({ ntp_enabled: v })} />
                 <Field label="Servidor NTP" value={cfg.ntp_server || ''} onChangeText={(t) => setCfg({ ...cfg, ntp_server: t })} autoCapitalize="none" />
@@ -503,6 +511,19 @@ function ConfigTab({ host }: { host: string }) {
                 <Button label="Aplicar hora" full disabled={busy} onPress={() => save({
                     ntp_server: cfg.ntp_server, timezone: cfg.timezone,
                 })} />
+            </Card>
+
+            <Card>
+                <Section title="Seguridad" />
+                <Field
+                    label="Token API"
+                    value={cfg.api_token || ''}
+                    onChangeText={(t) => setCfg({ ...cfg, api_token: t })}
+                    autoCapitalize="none"
+                    placeholder="Vacío = sin auth"
+                    hint="Si se fija, todas las acciones (mover, calibrar, OTA) requieren este token. Las lecturas siguen libres."
+                />
+                <Button label="Aplicar token" full disabled={busy} onPress={() => save({ api_token: cfg.api_token })} />
             </Card>
         </View>
     );
@@ -518,19 +539,22 @@ const BLE_POLICIES = [
     { v: 3, label: 'Apagado',        hint: 'BLE deshabilitado' },
 ];
 
-function AdvancedTab({ host, deviceId }: { host: string; deviceId: string }) {
+function AdvancedTab({ device }: { device: SavedDevice }) {
     const [cfg, setCfg] = useState<DeviceConfig | null>(null);
     const toast = useUi((s) => s.push);
     const remove = useDevices((s) => s.remove);
+    const client = apiFor(device);
 
-    useEffect(() => { (async () => setCfg(await api.config(host).catch(() => null)))(); }, [host]);
+    useEffect(() => {
+        (async () => setCfg(await client.config().catch(() => null)))();
+    }, [device.id, device.ip, device.apiToken]);
 
     const save = async (patch: DeviceConfig) => {
         if (!cfg) return;
         const next = { ...cfg, ...patch };
         setCfg(next);
         try {
-            await api.setConfig(host, patch);
+            await client.setConfig(patch);
             toast('Guardado', 'ok');
         } catch (e: any) {
             toast(e.message, 'error');
@@ -548,7 +572,7 @@ function AdvancedTab({ host, deviceId }: { host: string; deviceId: string }) {
                 <Button
                     label="Calibrar ahora"
                     full
-                    onPress={async () => { try { await api.calibrate(host); toast('Calibrando...', 'ok'); } catch (e: any) { toast(e.message, 'error'); } }}
+                    onPress={async () => { try { await client.calibrate(); toast('Calibrando...', 'ok'); } catch (e: any) { toast(e.message, 'error'); } }}
                     icon={<Ionicons name="resize" size={14} color="#061226" />}
                 />
             </Card>
@@ -589,19 +613,30 @@ function AdvancedTab({ host, deviceId }: { host: string; deviceId: string }) {
                     hint="6 dígitos para emparejar con autenticación"
                 />
                 <View className="flex-row gap-2 mt-2">
-                    <View className="flex-1"><Button label="BLE on"  variant="ghost" full onPress={async () => { try { await api.bleControl(host, 'on');  toast('BLE on', 'ok'); } catch (e: any) { toast(e.message, 'error'); } }} /></View>
-                    <View className="flex-1"><Button label="BLE off" variant="ghost" full onPress={async () => { try { await api.bleControl(host, 'off'); toast('BLE off', 'ok'); } catch (e: any) { toast(e.message, 'error'); } }} /></View>
+                    <View className="flex-1"><Button label="BLE on"  variant="ghost" full onPress={async () => { try { await client.bleControl('on');  toast('BLE on', 'ok'); } catch (e: any) { toast(e.message, 'error'); } }} /></View>
+                    <View className="flex-1"><Button label="BLE off" variant="ghost" full onPress={async () => { try { await client.bleControl('off'); toast('BLE off', 'ok'); } catch (e: any) { toast(e.message, 'error'); } }} /></View>
                 </View>
+                {device.bleId ? (
+                    <View className="mt-2">
+                        <Button
+                            label="Reconfigurar por Bluetooth"
+                            variant="ghost"
+                            full
+                            onPress={() => router.push({ pathname: '/ble-setup', params: { id: device.bleId, name: device.hostname, existing: device.id } })}
+                            icon={<Ionicons name="bluetooth" size={14} color={colors.fg} />}
+                        />
+                    </View>
+                ) : null}
             </Card>
 
             <Card>
                 <Section title="Mantenimiento" />
                 <View className="flex-row gap-2 mb-2">
                     <View className="flex-1">
-                        <Button label="Reiniciar" variant="ghost" full onPress={async () => { try { await api.reboot(host); toast('Reiniciando...', 'info'); } catch (e: any) { toast(e.message, 'error'); } }} />
+                        <Button label="Reiniciar" variant="ghost" full onPress={async () => { try { await client.reboot(); toast('Reiniciando...', 'info'); } catch (e: any) { toast(e.message, 'error'); } }} />
                     </View>
                     <View className="flex-1">
-                        <Button label="Olvidar WiFi" variant="warn" full onPress={async () => { try { await api.forgetWifi(host); toast('Portal abierto', 'info'); } catch (e: any) { toast(e.message, 'error'); } }} />
+                        <Button label="Olvidar WiFi" variant="warn" full onPress={async () => { try { await client.forgetWifi(); toast('Portal abierto', 'info'); } catch (e: any) { toast(e.message, 'error'); } }} />
                     </View>
                 </View>
                 <Button
@@ -609,7 +644,7 @@ function AdvancedTab({ host, deviceId }: { host: string; deviceId: string }) {
                     variant="danger"
                     full
                     onPress={async () => {
-                        try { await api.factory(host); toast('Reset solicitado', 'info'); } catch (e: any) { toast(e.message, 'error'); }
+                        try { await client.factory(); toast('Reset solicitado', 'info'); } catch (e: any) { toast(e.message, 'error'); }
                     }}
                     icon={<Ionicons name="warning-outline" size={14} color={colors.danger} />}
                 />

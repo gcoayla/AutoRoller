@@ -40,6 +40,27 @@ Estados posibles (`state`):
 | `calibrating`  | Rutina de calibración en curso               |
 | `fault`        | Error (driver, endstop atascado, etc.)       |
 
+## Autenticación (opcional)
+
+Si el campo `api_token` está vacío en la configuración del nodo, **no hay
+auth** y todos los endpoints son accesibles desde la LAN. Es el modo por
+defecto y mantiene compatibilidad con instalaciones existentes.
+
+Cuando configuras un `api_token` (desde `/api/config`, BLE o la app móvil),
+los endpoints **que cambian estado** exigen que se identifique con uno de:
+
+- Header `Authorization: Bearer <token>`
+- Header `X-AutoRoller-Token: <token>`
+- Query   `?token=<token>` (último recurso para clientes simples)
+
+Sin token válido, devuelven `401 Unauthorized` con
+`WWW-Authenticate: Bearer realm="autoroller"`.
+
+Endpoints que **no** requieren token aunque esté configurado: `GET /api/status`,
+`GET /api/config`, `GET /api/scan`, `GET /api/schedules`, WebSocket `/ws` y los
+estáticos. La razón es que la UI tiene que renderizar antes de pedir el token,
+y el estado en sí no expone nada sensible.
+
 ## REST
 
 Base: `http://<hostname>.local/` o `http://<ip>/`.
@@ -81,6 +102,13 @@ curl http://autoroller-salon.local/api/status
 curl -X POST http://autoroller-salon.local/api/config \
      -H 'Content-Type: application/json' \
      -d '{"mqtt_enabled":true,"mqtt_host":"192.168.1.10","mqtt_port":1883,"mqtt_base_topic":"autoroller"}'
+
+# Con auth: fijar un token y luego usarlo
+curl -X POST http://autoroller-salon.local/api/config \
+     -H 'Content-Type: application/json' \
+     -d '{"api_token":"miSecreto123"}'
+curl -X POST -H 'X-AutoRoller-Token: miSecreto123' \
+     http://autoroller-salon.local/api/open
 ```
 
 ### Atajos legacy

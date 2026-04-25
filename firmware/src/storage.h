@@ -48,6 +48,9 @@ struct Settings {
     uint8_t  ble_policy       = 0;        // 0=always 1=until_wifi 2=5min 3=off
     uint32_t ble_passkey      = 0;        // 0 = sin PIN
 
+    // Seguridad HTTP
+    String   api_token;                   // vacío = sin auth (compat)
+
     // NTP / zona horaria
     bool     ntp_enabled      = true;
     String   ntp_server       = "pool.ntp.org";

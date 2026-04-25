@@ -58,6 +58,7 @@ Settings load() {
     s.ble_enabled      = prefs.getBool("ble_en", true);
     s.ble_policy       = prefs.getUChar("ble_pol", BLE_DEFAULT_POLICY);
     s.ble_passkey      = prefs.getUInt("ble_pin", 0);
+    s.api_token        = prefs.getString("api_tok", "");
 
     s.ntp_enabled      = prefs.getBool("ntp_en", true);
     s.ntp_server       = prefs.getString("ntp_srv", NTP_DEFAULT_SERVER);
@@ -95,6 +96,7 @@ void save(const Settings& s) {
     prefs.putBool("ble_en",      s.ble_enabled);
     prefs.putUChar("ble_pol",    s.ble_policy);
     prefs.putUInt("ble_pin",     s.ble_passkey);
+    prefs.putString("api_tok",   s.api_token);
 
     prefs.putBool("ntp_en",      s.ntp_enabled);
     prefs.putString("ntp_srv",   s.ntp_server);

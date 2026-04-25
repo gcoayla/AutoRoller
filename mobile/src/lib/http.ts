@@ -1,5 +1,9 @@
 // Cliente HTTP minimalista para hablar con un nodo AutoRoller.
 // Trabaja con la API REST documentada en docs/api.md.
+//
+// Auth opcional: si pasas `token`, se inyecta como X-AutoRoller-Token. Una
+// petición que devuelve 401 lanza un Error("unauthorized") que la UI captura
+// para pedir el token al usuario.
 
 import type {
     DeviceConfig,
@@ -10,16 +14,26 @@ import type {
 
 const TIMEOUT_MS = 4000;
 
+export class UnauthorizedError extends Error {
+    constructor() { super('unauthorized'); this.name = 'UnauthorizedError'; }
+}
+
 function baseUrl(host: string): string {
     if (host.startsWith('http://') || host.startsWith('https://')) return host;
     return `http://${host}`;
 }
 
-async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
+function authHeaders(token?: string): Record<string, string> {
+    return token ? { 'X-AutoRoller-Token': token } : {};
+}
+
+async function fetchJson<T>(url: string, token?: string, init?: RequestInit): Promise<T> {
     const ctl = new AbortController();
     const timer = setTimeout(() => ctl.abort(), init?.signal ? 0 : TIMEOUT_MS);
     try {
-        const r = await fetch(url, { ...init, signal: init?.signal ?? ctl.signal });
+        const headers = { ...authHeaders(token), ...((init?.headers as any) || {}) };
+        const r = await fetch(url, { ...init, headers, signal: init?.signal ?? ctl.signal });
+        if (r.status === 401) throw new UnauthorizedError();
         if (!r.ok) throw new Error(`${r.status} ${r.statusText}`);
         const ct = r.headers.get('content-type') || '';
         if (ct.includes('application/json')) return (await r.json()) as T;
@@ -30,64 +44,58 @@ async function fetchJson<T>(url: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
-    status: (host: string) =>
-        fetchJson<DeviceStatus>(`${baseUrl(host)}/api/status`),
+    status: (host: string, token?: string) =>
+        fetchJson<DeviceStatus>(`${baseUrl(host)}/api/status`, token),
 
-    config: (host: string) =>
-        fetchJson<DeviceConfig>(`${baseUrl(host)}/api/config`),
+    config: (host: string, token?: string) =>
+        fetchJson<DeviceConfig>(`${baseUrl(host)}/api/config`, token),
 
-    setConfig: (host: string, cfg: DeviceConfig) =>
-        fetchJson<{ ok: boolean }>(`${baseUrl(host)}/api/config`, {
+    setConfig: (host: string, cfg: DeviceConfig, token?: string) =>
+        fetchJson<{ ok: boolean }>(`${baseUrl(host)}/api/config`, token, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(cfg),
         }),
 
-    scan: (host: string) =>
-        fetchJson<{ networks: WifiNetwork[] }>(`${baseUrl(host)}/api/scan`),
+    scan: (host: string, token?: string) =>
+        fetchJson<{ networks: WifiNetwork[] }>(`${baseUrl(host)}/api/scan`, token),
 
-    schedules: (host: string) =>
+    schedules: (host: string, token?: string) =>
         fetchJson<{ schedules: Schedule[]; time: string }>(
-            `${baseUrl(host)}/api/schedules`,
+            `${baseUrl(host)}/api/schedules`, token,
         ),
 
-    setSchedule: (host: string, s: Schedule) =>
-        fetchJson<{ ok: boolean }>(`${baseUrl(host)}/api/schedules`, {
+    setSchedule: (host: string, s: Schedule, token?: string) =>
+        fetchJson<{ ok: boolean }>(`${baseUrl(host)}/api/schedules`, token, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(s),
         }),
 
-    deleteSchedule: (host: string, i: number) =>
-        fetchJson<{ ok: boolean }>(`${baseUrl(host)}/api/schedules?i=${i}`, {
+    deleteSchedule: (host: string, i: number, token?: string) =>
+        fetchJson<{ ok: boolean }>(`${baseUrl(host)}/api/schedules?i=${i}`, token, {
             method: 'DELETE',
         }),
 
-    open:      (host: string) => fetchJson<unknown>(`${baseUrl(host)}/api/open`,      { method: 'POST' }),
-    close:     (host: string) => fetchJson<unknown>(`${baseUrl(host)}/api/close`,     { method: 'POST' }),
-    stop:      (host: string) => fetchJson<unknown>(`${baseUrl(host)}/api/stop`,      { method: 'POST' }),
-    set:       (host: string, value: number) =>
-        fetchJson<unknown>(`${baseUrl(host)}/api/set?value=${Math.round(value)}`, { method: 'POST' }),
-    calibrate: (host: string) => fetchJson<unknown>(`${baseUrl(host)}/api/calibrate`, { method: 'POST' }),
-    reboot:    (host: string) => fetchJson<unknown>(`${baseUrl(host)}/api/reboot`,    { method: 'POST' }),
-    factory:   (host: string) => fetchJson<unknown>(`${baseUrl(host)}/api/factory-reset`, { method: 'POST' }),
-    forgetWifi:(host: string) => fetchJson<unknown>(`${baseUrl(host)}/api/forget-wifi`,   { method: 'POST' }),
-    setHere:   (host: string, value: number) =>
-        fetchJson<unknown>(`${baseUrl(host)}/api/set-here?value=${value}`, { method: 'POST' }),
-    bleControl: (host: string, action: 'on' | 'off') =>
-        fetchJson<unknown>(`${baseUrl(host)}/api/ble`, {
+    open:      (host: string, token?: string) => fetchJson<unknown>(`${baseUrl(host)}/api/open`,      token, { method: 'POST' }),
+    close:     (host: string, token?: string) => fetchJson<unknown>(`${baseUrl(host)}/api/close`,     token, { method: 'POST' }),
+    stop:      (host: string, token?: string) => fetchJson<unknown>(`${baseUrl(host)}/api/stop`,      token, { method: 'POST' }),
+    set:       (host: string, value: number, token?: string) =>
+        fetchJson<unknown>(`${baseUrl(host)}/api/set?value=${Math.round(value)}`, token, { method: 'POST' }),
+    calibrate: (host: string, token?: string) => fetchJson<unknown>(`${baseUrl(host)}/api/calibrate`, token, { method: 'POST' }),
+    reboot:    (host: string, token?: string) => fetchJson<unknown>(`${baseUrl(host)}/api/reboot`,    token, { method: 'POST' }),
+    factory:   (host: string, token?: string) => fetchJson<unknown>(`${baseUrl(host)}/api/factory-reset`, token, { method: 'POST' }),
+    forgetWifi:(host: string, token?: string) => fetchJson<unknown>(`${baseUrl(host)}/api/forget-wifi`,   token, { method: 'POST' }),
+    setHere:   (host: string, value: number, token?: string) =>
+        fetchJson<unknown>(`${baseUrl(host)}/api/set-here?value=${value}`, token, { method: 'POST' }),
+    bleControl: (host: string, action: 'on' | 'off', token?: string) =>
+        fetchJson<unknown>(`${baseUrl(host)}/api/ble`, token, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ action }),
         }),
 
-    // Health-check rápido.
-    ping: async (host: string): Promise<boolean> => {
-        try {
-            await api.status(host);
-            return true;
-        } catch {
-            return false;
-        }
+    ping: async (host: string, token?: string): Promise<boolean> => {
+        try { await api.status(host, token); return true; } catch { return false; }
     },
 };

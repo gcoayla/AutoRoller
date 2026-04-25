@@ -160,6 +160,7 @@ function BleAdd() {
 // ---------------------------------------------------------------------------
 function WifiAdd() {
     const [host, setHost] = useState('');
+    const [token, setToken] = useState('');
     const [busy, setBusy] = useState(false);
     const add = useDevices((s) => s.add);
     const toast = useUi((s) => s.push);
@@ -172,12 +173,13 @@ function WifiAdd() {
         }
         setBusy(true);
         try {
-            const status = await api.status(value);
+            const status = await api.status(value, token || undefined);
             const id = `wifi-${value}`;
             add({
                 id,
                 hostname: status.device || value,
                 ip: status.wifi_ip || (value.match(/^\d/) ? value : undefined),
+                apiToken: token || undefined,
                 addedAt: Date.now(),
             });
             toast('Dispositivo añadido', 'ok');
@@ -210,6 +212,15 @@ function WifiAdd() {
                     onChangeText={setHost}
                     autoCapitalize="none"
                     autoCorrect={false}
+                />
+                <Field
+                    label="Token API (opcional)"
+                    placeholder="Sólo si el nodo lo exige"
+                    value={token}
+                    onChangeText={setToken}
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    secureTextEntry
                 />
                 <Button
                     label={busy ? 'Comprobando...' : 'Añadir dispositivo'}

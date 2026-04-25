@@ -14,6 +14,7 @@
 #include "ble_provisioning.h"
 #include "config.h"
 #include "motor_controller.h"
+#include "settings_lock.h"
 #include "time_sync.h"
 #include "wifi_manager.h"
 
@@ -79,21 +80,25 @@ static void handleStatus(AsyncWebServerRequest* req) {
 }
 
 static void handleOpen(AsyncWebServerRequest* req) {
+    AUTH_GUARD(req);
     motor::moveToPercent(0);
     req->send(200, "application/json", "{\"ok\":true}");
 }
 
 static void handleClose(AsyncWebServerRequest* req) {
+    AUTH_GUARD(req);
     motor::moveToPercent(100);
     req->send(200, "application/json", "{\"ok\":true}");
 }
 
 static void handleStop(AsyncWebServerRequest* req) {
+    AUTH_GUARD(req);
     motor::stop();
     req->send(200, "application/json", "{\"ok\":true}");
 }
 
 static void handleSetPercent(AsyncWebServerRequest* req) {
+    AUTH_GUARD(req);
     if (!req->hasParam("value")) {
         req->send(400, "application/json", "{\"error\":\"missing value\"}");
         return;
@@ -106,11 +111,13 @@ static void handleSetPercent(AsyncWebServerRequest* req) {
 }
 
 static void handleCalibrate(AsyncWebServerRequest* req) {
+    AUTH_GUARD(req);
     motor::calibrate();
     req->send(200, "application/json", "{\"ok\":true,\"calibrating\":true}");
 }
 
 static void handleSetHere(AsyncWebServerRequest* req) {
+    AUTH_GUARD(req);
     int32_t v = 0;
     if (req->hasParam("value")) v = req->getParam("value")->value().toInt();
     motor::setHere(v);
@@ -158,6 +165,8 @@ static void handleScheduleGet(AsyncWebServerRequest* req) {
 }
 
 static void handleSchedulePost(AsyncWebServerRequest* req, JsonVariant& body) {
+    AUTH_GUARD(req);
+    SettingsLock l;
     auto obj = body.as<JsonObject>();
     int i = obj["i"] | -1;
     if (i < 0 || i >= (int)SCHEDULER_MAX_ENTRIES) {
@@ -175,6 +184,7 @@ static void handleSchedulePost(AsyncWebServerRequest* req, JsonVariant& body) {
 }
 
 static void handleScheduleDelete(AsyncWebServerRequest* req) {
+    AUTH_GUARD(req);
     if (!req->hasParam("i")) {
         req->send(400, "application/json", "{\"error\":\"falta i\"}"); return;
     }
@@ -182,12 +192,16 @@ static void handleScheduleDelete(AsyncWebServerRequest* req) {
     if (i < 0 || i >= (int)SCHEDULER_MAX_ENTRIES) {
         req->send(400, "application/json", "{\"error\":\"índice fuera de rango\"}"); return;
     }
-    s_settings->schedules[i] = storage::ScheduleEntry{};
-    storage::saveSchedules(*s_settings);
+    {
+        SettingsLock l;
+        s_settings->schedules[i] = storage::ScheduleEntry{};
+        storage::saveSchedules(*s_settings);
+    }
     req->send(200, "application/json", "{\"ok\":true}");
 }
 
 static void handleBlePost(AsyncWebServerRequest* req, JsonVariant& body) {
+    AUTH_GUARD(req);
     auto obj = body.as<JsonObject>();
     String action = obj["action"] | "";
     if (action == "on")           bleprov::start();
@@ -227,6 +241,8 @@ static void handleScan(AsyncWebServerRequest* req) {
 }
 
 static void handleConfigPost(AsyncWebServerRequest* req, JsonVariant& body) {
+    AUTH_GUARD(req);
+    SettingsLock l;
     auto obj = body.as<JsonObject>();
     if (obj["hostname"].is<const char*>())          s_settings->hostname        = obj["hostname"].as<String>();
     if (obj["wifi_ssid"].is<const char*>())         s_settings->wifi_ssid       = obj["wifi_ssid"].as<String>();
@@ -247,9 +263,47 @@ static void handleConfigPost(AsyncWebServerRequest* req, JsonVariant& body) {
     if (obj["ntp_enabled"].is<bool>())              s_settings->ntp_enabled     = obj["ntp_enabled"].as<bool>();
     if (obj["ntp_server"].is<const char*>())        s_settings->ntp_server      = obj["ntp_server"].as<String>();
     if (obj["timezone"].is<const char*>())          s_settings->timezone        = obj["timezone"].as<String>();
+    if (obj["api_token"].is<const char*>())         s_settings->api_token       = obj["api_token"].as<String>();
     storage::save(*s_settings);
     req->send(200, "application/json", "{\"ok\":true}");
 }
+
+// ----------------------------------------------------------------------------
+//  Auth simple por token. Si `api_token` está vacío, todo abierto (compat).
+//  Si está fijado, exigimos uno de:
+//     - Header  Authorization: Bearer <token>
+//     - Header  X-AutoRoller-Token: <token>
+//     - Query   ?token=<token>            (último recurso para clientes simples)
+//  Sólo protegemos endpoints que cambian estado; /api/status y la UI estática
+//  siguen libres (no exponen secretos y la UI necesita pedirte el token).
+// ----------------------------------------------------------------------------
+static bool requestHasToken(AsyncWebServerRequest* req) {
+    const String& tok = s_settings->api_token;
+    if (tok.length() == 0) return true;        // sin token configurado = libre
+    if (req->hasHeader("Authorization")) {
+        String h = req->header("Authorization");
+        if (h.startsWith("Bearer ") && h.substring(7) == tok) return true;
+    }
+    if (req->hasHeader("X-AutoRoller-Token") &&
+        req->header("X-AutoRoller-Token") == tok) {
+        return true;
+    }
+    if (req->hasParam("token") && req->getParam("token")->value() == tok) {
+        return true;
+    }
+    return false;
+}
+
+static bool authReject(AsyncWebServerRequest* req) {
+    if (requestHasToken(req)) return false;
+    auto* resp = req->beginResponse(401, "application/json", "{\"error\":\"unauthorized\"}");
+    resp->addHeader("WWW-Authenticate", "Bearer realm=\"autoroller\"");
+    req->send(resp);
+    return true;
+}
+
+// Wrapper para los handlers que requieren auth.
+#define AUTH_GUARD(req) do { if (authReject(req)) return; } while (0)
 
 // Acción diferida: AsyncWebServer NO permite bloquear en handlers, así que
 // disparamos una tarea de un solo uso que duerme y luego ejecuta la acción.
@@ -268,19 +322,25 @@ static void scheduleAfter(uint32_t ms, void (*fn)()) {
 }
 
 static void handleReboot(AsyncWebServerRequest* req) {
+    AUTH_GUARD(req);
     req->send(200, "application/json", "{\"ok\":true,\"rebooting\":true}");
     scheduleAfter(200, []() { ESP.restart(); });
 }
 
 static void handleForgetWifi(AsyncWebServerRequest* req) {
-    s_settings->wifi_ssid = "";
-    s_settings->wifi_password = "";
-    storage::save(*s_settings);
+    AUTH_GUARD(req);
+    {
+        SettingsLock l;
+        s_settings->wifi_ssid = "";
+        s_settings->wifi_password = "";
+        storage::save(*s_settings);
+    }
     req->send(200, "application/json", "{\"ok\":true,\"portal\":true}");
     scheduleAfter(200, []() { netcfg::forcePortal(); });
 }
 
 static void handleFactoryReset(AsyncWebServerRequest* req) {
+    AUTH_GUARD(req);
     storage::factoryReset();
     req->send(200, "application/json", "{\"ok\":true,\"rebooting\":true}");
     scheduleAfter(200, []() { ESP.restart(); });
@@ -330,21 +390,31 @@ void begin(storage::Settings& settings) {
             handleBlePost(req, json);
         }));
 
-    // ---- atajo legacy: /up /down /stop ?p=
-    server.on("/up",   HTTP_GET, [](AsyncWebServerRequest* r) { motor::moveToPercent(0);   r->send(200, "text/plain", "ok"); });
-    server.on("/down", HTTP_GET, [](AsyncWebServerRequest* r) { motor::moveToPercent(100); r->send(200, "text/plain", "ok"); });
-    server.on("/stop", HTTP_GET, [](AsyncWebServerRequest* r) { motor::stop();             r->send(200, "text/plain", "ok"); });
+    // ---- atajo legacy: /up /down /stop (también con auth)
+    server.on("/up",   HTTP_GET, [](AsyncWebServerRequest* r) { if (authReject(r)) return; motor::moveToPercent(0);   r->send(200, "text/plain", "ok"); });
+    server.on("/down", HTTP_GET, [](AsyncWebServerRequest* r) { if (authReject(r)) return; motor::moveToPercent(100); r->send(200, "text/plain", "ok"); });
+    server.on("/stop", HTTP_GET, [](AsyncWebServerRequest* r) { if (authReject(r)) return; motor::stop();             r->send(200, "text/plain", "ok"); });
 
     // ---- OTA por HTTP (subida directa de .bin)
     server.on("/api/ota", HTTP_POST,
         [](AsyncWebServerRequest* req) {
+            if (!requestHasToken(req)) {
+                req->send(401, "application/json", "{\"error\":\"unauthorized\"}");
+                return;
+            }
             bool ok = !Update.hasError();
             req->send(ok ? 200 : 500, "application/json",
                       ok ? "{\"ok\":true,\"rebooting\":true}" : "{\"ok\":false}");
             if (ok) scheduleAfter(200, []() { ESP.restart(); });
         },
-        [](AsyncWebServerRequest* /*req*/, String /*filename*/, size_t index,
+        [](AsyncWebServerRequest* req, String /*filename*/, size_t index,
            uint8_t* data, size_t len, bool final) {
+            // Si no hay token válido, abortamos el Update sin escribir nada;
+            // el handler de respuesta de arriba es el que envía el 401.
+            if (!requestHasToken(req)) {
+                if (index == 0) Update.abort();
+                return;
+            }
             if (index == 0) {
                 Serial.println("[OTA] inicio de subida");
                 if (!Update.begin(UPDATE_SIZE_UNKNOWN)) Update.printError(Serial);

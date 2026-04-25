@@ -15,6 +15,7 @@ export type SavedDevice = {
     hostname: string;       // se actualiza si cambia
     ip?: string;            // última IP conocida (mDNS o BLE info)
     bleId?: string;         // address BLE para reconectar
+    apiToken?: string;      // token para auth HTTP (vacío = sin auth)
     addedAt: number;
     favorite?: boolean;
     color?: string;         // tinte personalizado para distinguirlos
@@ -60,6 +61,7 @@ export type DeviceConfig = {
     ntp_enabled?: boolean;
     ntp_server?: string;
     timezone?: string;
+    api_token?: string;
 };
 
 export type Schedule = {

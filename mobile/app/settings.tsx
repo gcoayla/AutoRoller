@@ -2,7 +2,7 @@
 // Por ahora: limpiar lista de dispositivos, info de la app.
 
 import React from 'react';
-import { Linking, Pressable, ScrollView, Text, View } from 'react-native';
+import { Alert, Linking, Pressable, ScrollView, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 
@@ -19,6 +19,22 @@ export default function SettingsScreen() {
     const count = useDevices((s) => s.devices.length);
     const toast = useUi((s) => s.push);
 
+    const askClear = () => {
+        Alert.alert(
+            'Borrar todos los dispositivos',
+            `Vas a quitar ${count} dispositivo${count !== 1 ? 's' : ''} de tu lista local. ` +
+            'Los nodos físicos siguen funcionando — sólo se borra el registro de esta app.',
+            [
+                { text: 'Cancelar', style: 'cancel' },
+                {
+                    text: 'Borrar',
+                    style: 'destructive',
+                    onPress: () => { clear(); toast('Lista vacía', 'info'); },
+                },
+            ],
+        );
+    };
+
     return (
         <Screen>
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingTop: 8, paddingBottom: 40 }}>
@@ -29,7 +45,8 @@ export default function SettingsScreen() {
                         label="Borrar todos los dispositivos"
                         variant="danger"
                         full
-                        onPress={() => { clear(); toast('Lista vacía', 'info'); }}
+                        onPress={askClear}
+                        disabled={count === 0}
                         icon={<Ionicons name="trash-outline" size={14} color={colors.danger} />}
                     />
                 </Card>

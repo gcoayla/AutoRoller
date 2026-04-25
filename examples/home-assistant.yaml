@@ -2,6 +2,11 @@
 #
 # Pega este bloque en tu `configuration.yaml` (o en un paquete dentro de
 # `packages/` si tienes esa estructura) y reinicia HA.
+#
+# Nota sobre auth: MQTT no se ve afectado por el `api_token` HTTP del nodo;
+# la autenticación de MQTT la gestiona tu broker (usuario/contraseña). Si
+# quieres usar la API HTTP en su lugar (rest_command), recuerda añadir el
+# header `Authorization: Bearer <token>` cuando hayas configurado uno.
 
 mqtt:
   cover:

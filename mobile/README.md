@@ -18,6 +18,13 @@ casa desde el móvil:
   aceleración, endstops), NTP, política BLE, passkey, calibración, OTA,
   reset de fábrica.
 - **Tema oscuro futurista** (glassmorphism, gradientes, halos, hápticos).
+- **WebSocket en tiempo real** con fallback automático a HTTP polling si la
+  conexión se cae.
+- **Auth por token** opcional — cada nodo guarda su propio `apiToken` y la
+  app lo inyecta en cada request.
+- **Reconfig BLE** desde un dispositivo ya guardado: si tienes el `bleId`,
+  un botón en "Avanzado" reabre el wizard saltando directo a la pantalla
+  de WiFi.
 
 ## Stack
 

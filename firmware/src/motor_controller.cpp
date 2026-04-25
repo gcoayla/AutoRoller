@@ -1,6 +1,7 @@
 #include "motor_controller.h"
 
 #include <FastAccelStepper.h>
+#include <esp_task_wdt.h>
 
 #include "config.h"
 #include "storage.h"
@@ -148,13 +149,14 @@ static void calibrateBlocking() {
         stepper->runBackward();
         while (!endstopTopActive()) {
             vTaskDelay(pdMS_TO_TICKS(2));
+            esp_task_wdt_reset();
             if (s_state == State::FAULT) return;
         }
         stepper->forceStopAndNewPosition(0);
 
         // pequeño retroceso para soltar el endstop
         stepper->moveTo(50);
-        while (stepper->isRunning()) vTaskDelay(pdMS_TO_TICKS(2));
+        while (stepper->isRunning()) { vTaskDelay(pdMS_TO_TICKS(2)); esp_task_wdt_reset(); }
         stepper->setCurrentPosition(0);
 
         // 2) baja (positivo) hasta endstop inferior
@@ -162,6 +164,7 @@ static void calibrateBlocking() {
         stepper->runForward();
         while (!endstopBottomActive()) {
             vTaskDelay(pdMS_TO_TICKS(2));
+            esp_task_wdt_reset();
             if (s_state == State::FAULT) return;
         }
         int32_t maxP = stepper->getCurrentPosition();
@@ -177,7 +180,7 @@ static void calibrateBlocking() {
         // 3) vuelve a 0 (totalmente arriba)
         stepper->setSpeedInHz(fastSpeed);
         stepper->moveTo(0);
-        while (stepper->isRunning()) vTaskDelay(pdMS_TO_TICKS(5));
+        while (stepper->isRunning()) { vTaskDelay(pdMS_TO_TICKS(5)); esp_task_wdt_reset(); }
     }
 
     s_state = State::IDLE;
@@ -233,8 +236,10 @@ void tick() {
 
 void task(void* arg) {
     (void)arg;
+    esp_task_wdt_add(NULL);
     for (;;) {
         tick();
+        esp_task_wdt_reset();
         vTaskDelay(pdMS_TO_TICKS(5));
     }
 }

@@ -81,6 +81,19 @@ firmware/
     └── buttons          ← anti-rebote + LED WS2812 de estado
 ```
 
+## Seguridad
+
+- **Auth HTTP opcional**: configura `api_token` desde la web, BLE o app.
+  Cuando está fijado, los endpoints que cambian estado piden el header
+  `Authorization: Bearer <token>` o `X-AutoRoller-Token: <token>`.
+  Detalles en [`api.md`](api.md). Por defecto vacío = sin auth (la red
+  doméstica se asume confiable, como en otros proyectos similares).
+- **Mutex sobre el estado en RAM**: añadido en v1.2 para evitar carreras
+  entre la tarea NimBLE, los handlers HTTP y la tarea del motor cuando
+  varios escriben a la vez.
+- **Task Watchdog**: si una tarea registrada se cuelga más de 30 s, el
+  chip se reinicia. Cubre la calibración del motor y el bucle de red.
+
 ## Decisiones de diseño
 
 - **FastAccelStepper en vez de AccelStepper**: usa el periférico RMT del ESP32

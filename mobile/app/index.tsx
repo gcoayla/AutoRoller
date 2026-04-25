@@ -11,7 +11,7 @@ import { Card } from '@/components/Card';
 import { DeviceCard } from '@/components/DeviceCard';
 import { Screen } from '@/components/Screen';
 import { useDeviceStatus } from '@/hooks/useDeviceStatus';
-import { api } from '@/lib/http';
+import { apiFor } from '@/lib/device-client';
 import { colors } from '@/lib/colors';
 import { useDevices } from '@/store/devices';
 import { useUi } from '@/store/ui';
@@ -29,18 +29,19 @@ function DeviceRow({ device }: { device: SavedDevice }) {
     const online     = useDevices((s) => s.onlineMap[device.id]);
     const status = { percent, state, calibrated, wifi_rssi };
     const toast  = useUi((s) => s.push);
-    const host   = device.ip || `${device.hostname}.local`;
+    const client = apiFor(device);
 
     const onQuick = useCallback(
         async (a: 'open' | 'close' | 'stop') => {
             try {
-                await api[a](host);
+                await client[a]();
                 toast(a === 'open' ? 'Subiendo' : a === 'close' ? 'Bajando' : 'Parando', 'ok');
             } catch (e: any) {
                 toast(`Error: ${e.message}`, 'error');
             }
         },
-        [host, toast],
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [device.id, device.ip, device.apiToken, toast],
     );
 
     return <DeviceCard device={device} status={status} online={online} onQuick={onQuick} />;
@@ -63,7 +64,7 @@ export default function HomeScreen() {
 
     const groupAction = async (a: 'open' | 'close' | 'stop') => {
         const results = await Promise.allSettled(
-            devices.map((d) => api[a](d.ip || `${d.hostname}.local`)),
+            devices.map((d) => apiFor(d)[a]()),
         );
         const ok = results.filter((r) => r.status === 'fulfilled').length;
         toast(`${ok}/${devices.length} actualizados`, ok === devices.length ? 'ok' : 'info');
