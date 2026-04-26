@@ -14,48 +14,120 @@ OpenSCAD para poder cambiar pitch y dientes con dos variables).
 
 ## Modelos abiertos recomendados
 
-> Antes de descargar, mira los comentarios y el remix más popular —
-> normalmente alguien ya ha resuelto el ajuste para tu motor o tu cadena.
+Lista de modelos verificados en abril 2026, todos descargables sin pago.
+**No los inventamos** — son enlaces directos. Antes de imprimir, abre el
+modelo y mira los comentarios y remixes; suele haber alguien que ya ha
+resuelto el ajuste para una cadena distinta o un motor más corto.
 
-### Carcasa + bracket (lo más parecido a SwitchBot)
+### 🏆 Recomendación principal — *Minimalistic Motorized Roller Blinds*
 
-Busca en [Printables](https://www.printables.com/) por:
+> **El que mejor encaja con AutoRoller.**
+> Por **Lush**, agosto 2023 · 329 likes · 919 descargas en Printables.
 
-- **"Bead chain motor housing ESP32"** — algunos ya vienen con hueco para
-  TMC2208 incluido.
-- **"DIY SwitchBot Curtain"** — la familia clásica.
-- **"Smart blinds bead chain"** — variantes para distintos motores.
+[**Minimalistic Motorized Roller Blinds — NEMA 17 stepper motor gear and mount**](https://www.printables.com/model/465889-minimalistic-motorized-roller-blinds-nema-17-stepp)
 
-Lo que tienes que confirmar antes de descargar:
+- Motor: **NEMA 17 1.2 A · 0.42 Nm** (idéntico al BOM nuestro).
+- Driver: **TMC2209** (compatible pin a pin con TMC2208).
+- Cadena: **4.5 mm bolita / 6.1 mm pitch** — la más común en estores
+  europeos, igual que el preset por defecto de nuestro `bead_wheel.scad`.
+- Trae **archivo Fusion 360 (.f3d)** editable para adaptar a otras
+  cadenas si tu pitch es distinto.
+- StallGuard configurado para detectar el atasco al final del recorrido
+  (el firmware nuestro lo aprovecha si conectas DIAG a GPIO 34).
 
-| Confirma                              | Por qué                                  |
-| ------------------------------------- | ---------------------------------------- |
-| Motor: NEMA 17 corto (23-34 mm)       | El hueco lo da la huella                 |
-| Eje: 5 mm liso (no D-cut)             | Si es D-cut, imprime también `shaft_adapter` |
-| Cadena: 4.5 mm bolita / 6 mm pitch    | Para alinear con tu rueda dentada        |
-| Tipo de fijación: VHB o tornillo      | Hay variantes para cada uno              |
+**Por qué este**: es el único de la lista que usa NEMA 17 + TMC, exactamente
+lo que pide nuestro firmware. Imprimes la carcasa y el bracket, montas la
+electrónica de AutoRoller dentro y listo.
 
-**Modelos referenciados que sirven directamente** (al cierre de v1.4):
+> Si tu cadena es de **6 mm** en vez de 4.5 mm, mejor usa nuestra rueda
+> `bead_wheel.scad` reexportada con `bead_d=6 pitch=9` y solo descarga la
+> carcasa de Lush (tendrás que hacer el hueco un poco mayor).
 
-- *Aqara Roller Shade Driver E1 clone* (Printables) — funciona con NEMA 17
-  corto y rueda imprimible separada. Cambia la rueda por la nuestra.
-- *SwitchBot Curtain Replica* (Thingiverse) — caja amplia, fácil de
-  adaptar si tu cadena es 4.5 mm.
+---
 
-> No enlazamos URLs concretas porque cambian, pero las palabras clave de
-> arriba devuelven >50 resultados en cualquier momento.
+### 🥈 Alternativa todo-en-uno — *SmartBlinds Pro*
 
-### NEMA 17 mounts genéricos
+> Más nuevo, más pulido, pero usa motor distinto.
+> Por **fluetke**, 2025 · 31 likes · 204 descargas · marcado como
+> *"polished beta"*.
 
-Si quieres modelar la carcasa tú y solo necesitas la huella del motor:
-busca **"NEMA 17 mounting plate"** — todas tienen el patrón estándar
-(31 mm cuadrado, agujero central de 22 mm, 4 × M3).
+[**SmartBlinds Pro — automate your roller blinds**](https://www.printables.com/model/1529757-smartblinds-pro-automate-your-roller-blinds)
 
-### Adaptador eje D-cut a 5 mm cilíndrico
+- Motor: **28BYJ-48** (5 V con reductora interna).
+- Micro: **Wemos LOLIN C3 Mini (ESP32-C3)**.
+- No invasivo, se monta junto a la cadena.
+- Firmware propio con interfaz web + **MQTT integrado** + alternativa
+  ESPHome.
+- **Hardware y software 100 % open-source** (PCB en GitHub).
 
-Si tu motor tiene flat:
+**Cuándo elegirlo**: si prefieres un motor más pequeño y silencioso (28BYJ-48
+en vez de NEMA 17). **Aviso**: nuestro firmware actual está pensado para
+STEP/DIR (TMC2208), no para 28BYJ-48 con ULN2003. Si vas por aquí, tendrás
+que adaptar el motor controller. La alternativa es usar el firmware del
+propio SmartBlinds Pro.
 
-- Busca **"D-shaft to round adapter 5mm"** o modela uno (5 líneas en OpenSCAD).
+---
+
+### 🛠 Solo rueda dentada / repuesto — *AM43 Variable Drive Pulleys*
+
+[**AM43 Blind Motor — variable drive pulleys for beaded chain roller blinds**](https://www.printables.com/model/492121-am43-blind-motor-variable-drive-pulleys-for-beaded)
+
+- **Solo las poleas** (varias variantes: estándar, alta carga, diámetros
+  pequeños y grandes).
+- Pensadas originalmente para el motor comercial **AM43**, pero el patrón
+  de bolitas y el agujero del eje son adaptables.
+- Útil como **plan B** si nuestro `bead_wheel.scad` no cuaja: descarga las
+  variantes y comprueba cuál encaja con tu cadena específica.
+
+---
+
+### Otras alternativas viables (sin probar a fondo)
+
+Las dejo aquí por si necesitas variedad:
+
+- [**Automatic Smart Roller Blinds Mod**](https://www.printables.com/model/1107892-automatic-smart-roller-blinds-mod)
+  — by Finn. NEMA 17 + ESPHome. Buena opción si prefieres ESPHome al
+  firmware nuestro.
+- [**Smart IKEA Roller Blinds**](https://www.printables.com/model/291966-smart-ikea-roller-blinds)
+  — by bmyonatan. ESP32 + Home Assistant. Específico para estores IKEA.
+- [**Motor on a roller blind**](https://www.thingiverse.com/thing:2392856)
+  — by nidayand (Thingiverse). El "abuelo" de la familia, muchísimos
+  remixes y variante ESPHome activa.
+- [**Motorized Roller Blinds (Leroy Merlin version)**](https://www.thingiverse.com/thing:4093205)
+  — by Erop. Optimizado para estores **Leroy Merlin** (común en España).
+  Puede ser ideal si compraste tu estor allí.
+- [**Big Smart Motorized Roller Blind**](https://www.thingiverse.com/thing:5575324)
+  — by Nikolaj_. NEMA 17 24 V + Tasmota + HomeKit. Para estores muy
+  grandes/pesados.
+
+### Para más opciones, búsqueda directa
+
+- [Tag `rollerblind` en Printables](https://www.printables.com/tag/rollerblind)
+- [Tag `blind` en Printables](https://www.printables.com/tag/blind)
+- [Tag `Roller blinds` en Thingiverse](https://www.thingiverse.com/tag:roller_blinds)
+
+## Cómo elegir entre ellos
+
+```
+┌─────────────────────────────────────────────────────┐
+│  ¿Tienes ya el motor NEMA 17 + TMC2208 del BOM?     │
+│  ¿Cadena 4.5 mm bolita / 6 mm pitch?                │
+│                       │                             │
+│            ┌──────────┴──────────┐                  │
+│           SÍ                    NO                  │
+│            │                     │                  │
+│            ▼                     ▼                  │
+│   "Minimalistic …"      ¿Cadena distinta?           │
+│   (Lush) ✅             ┌────────┴────────┐         │
+│                        SÍ                NO         │
+│                         │                 │         │
+│                         ▼                 ▼         │
+│                Carcasa de Lush    "SmartBlinds Pro" │
+│                + nuestro          (motor 28BYJ-48)  │
+│                bead_wheel.scad    necesita firmware │
+│                ajustado           propio o adaptar  │
+└─────────────────────────────────────────────────────┘
+```
 
 ## Esquema de carpetas (cuando subas tus STLs)
 
