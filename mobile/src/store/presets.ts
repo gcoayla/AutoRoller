@@ -76,6 +76,27 @@ export const usePresets = create<State>()(
         {
             name: 'autoroller.presets',
             storage: createJSONStorage(() => AsyncStorage),
+            version: 1,
+            migrate: (persisted: any, _version) => {
+                if (!persisted) return persisted;
+                const presets: Preset[] = Array.isArray(persisted.presets)
+                    ? persisted.presets
+                          .filter((p: any) => p && typeof p.id === 'string' && typeof p.name === 'string')
+                          .map((p: any) => ({
+                              id:    p.id,
+                              name:  p.name,
+                              icon:  typeof p.icon === 'string' ? p.icon : undefined,
+                              items: Array.isArray(p.items)
+                                  ? p.items.filter(
+                                        (it: any) =>
+                                            it && typeof it.deviceId === 'string' &&
+                                            typeof it.target_pct === 'number',
+                                    )
+                                  : [],
+                          }))
+                    : [];
+                return { ...persisted, presets };
+            },
         },
     ),
 );

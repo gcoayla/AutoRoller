@@ -25,28 +25,36 @@ export default function PresetsScreen() {
     const toast   = useUi((s) => s.push);
 
     const apply = async (p: Preset) => {
-        const knownItems = p.items.filter((it) => devices.some((d) => d.id === it.deviceId));
-        if (knownItems.length === 0) {
+        const resolved = p.items
+            .map((it) => ({ it, d: devices.find((x) => x.id === it.deviceId) }))
+            .filter((x) => x.d) as { it: typeof p.items[number]; d: typeof devices[number] }[];
+
+        if (resolved.length === 0) {
             toast('Este preset no tiene dispositivos', 'error');
             return;
         }
-        const offline = knownItems.filter((it) => onlineMap[it.deviceId] === false).length;
-        if (offline === knownItems.length) {
+        const offline = resolved.filter((x) => onlineMap[x.d.id] === false).length;
+        if (offline === resolved.length) {
             toast('Todos los dispositivos del preset están offline', 'error');
             return;
         }
 
         const results = await Promise.allSettled(
-            knownItems.map((it) => {
-                const d = devices.find((x) => x.id === it.deviceId)!;
-                return apiFor(d).set(it.target_pct);
-            }),
+            resolved.map(({ it, d }) => apiFor(d).set(it.target_pct)),
         );
-        const ok = results.filter((r) => r.status === 'fulfilled').length;
-        toast(
-            `${p.name}: ${ok}/${knownItems.length} aplicados`,
-            ok === knownItems.length ? 'ok' : 'info',
-        );
+        const failed: string[] = [];
+        results.forEach((r, i) => {
+            if (r.status === 'rejected') failed.push(resolved[i].d.hostname);
+        });
+        const ok = resolved.length - failed.length;
+        if (failed.length === 0) {
+            toast(`${p.name}: ${ok}/${resolved.length} aplicados`, 'ok');
+        } else {
+            toast(
+                `${p.name}: ${ok}/${resolved.length} · falló: ${failed.slice(0, 2).join(', ')}${failed.length > 2 ? '…' : ''}`,
+                'info',
+            );
+        }
     };
 
     const askRemove = (p: Preset) => {

@@ -85,24 +85,44 @@ export default function HomeScreen() {
     const groupAction = async (target: SavedDevice[], a: 'open' | 'close' | 'stop') => {
         if (target.length === 0) return;
         const results = await Promise.allSettled(target.map((d) => apiFor(d)[a]()));
-        const ok = results.filter((r) => r.status === 'fulfilled').length;
-        toast(`${ok}/${target.length} actualizados`, ok === target.length ? 'ok' : 'info');
+        const failed: string[] = [];
+        results.forEach((r, i) => {
+            if (r.status === 'rejected') failed.push(target[i].hostname);
+        });
+        const ok = target.length - failed.length;
+        if (failed.length === 0) {
+            toast(`${ok}/${target.length} actualizados`, 'ok');
+        } else {
+            toast(`${ok}/${target.length} OK · falló: ${failed.slice(0, 2).join(', ')}${failed.length > 2 ? '…' : ''}`, 'info');
+        }
     };
 
     const applyPreset = async (p: Preset) => {
-        const valid = p.items.filter((it) => devices.some((d) => d.id === it.deviceId));
-        if (valid.length === 0) {
-            toast('Preset vacío', 'error');
+        // Snapshot de la lista de devices ahora; evita race si el usuario
+        // borra un device a mitad. Los `find` siguen sobre `devices` actual
+        // por si acaso.
+        const resolved = p.items
+            .map((it) => ({ it, d: devices.find((x) => x.id === it.deviceId) }))
+            .filter((x): x is { it: typeof p.items[number]; d: SavedDevice } => !!x.d);
+
+        if (resolved.length === 0) {
+            toast(`${p.name}: ningún dispositivo del preset existe`, 'error');
             return;
         }
+
         const results = await Promise.allSettled(
-            valid.map((it) => {
-                const d = devices.find((x) => x.id === it.deviceId)!;
-                return apiFor(d).set(it.target_pct);
-            }),
+            resolved.map(({ it, d }) => apiFor(d).set(it.target_pct)),
         );
-        const ok = results.filter((r) => r.status === 'fulfilled').length;
-        toast(`${p.name}: ${ok}/${valid.length}`, ok === valid.length ? 'ok' : 'info');
+        const failed: string[] = [];
+        results.forEach((r, i) => {
+            if (r.status === 'rejected') failed.push(resolved[i].d.hostname);
+        });
+        const ok = resolved.length - failed.length;
+        if (failed.length === 0) {
+            toast(`${p.name}: ${ok}/${resolved.length} aplicados`, 'ok');
+        } else {
+            toast(`${p.name}: ${ok}/${resolved.length} · falló: ${failed.slice(0, 2).join(', ')}${failed.length > 2 ? '…' : ''}`, 'info');
+        }
     };
 
     return (

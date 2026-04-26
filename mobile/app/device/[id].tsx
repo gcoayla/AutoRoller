@@ -211,22 +211,34 @@ function FavoritesPanel({
     const client = apiFor(device);
     const toast = useUi((s) => s.push);
 
-    const [list, setList] = useState<Favorite[] | null>(null);
+    const [list, setList]     = useState<Favorite[] | null>(null);
     const [editing, setEditing] = useState<Favorite | null>(null);
+    const [limOpen,  setLimOpen]  = useState(0);
+    const [limClose, setLimClose] = useState(100);
 
     const reload = async () => {
         try {
-            const r = await client.favorites();
-            setList(r.favorites);
+            const [favs, cfg] = await Promise.all([
+                client.favorites(),
+                client.config().catch(() => null),
+            ]);
+            setList(favs.favorites);
+            if (cfg) {
+                setLimOpen(typeof cfg.limit_open === 'number' ? cfg.limit_open : 0);
+                setLimClose(typeof cfg.limit_close === 'number' ? cfg.limit_close : 100);
+            }
         } catch (e: any) {
             toast(e.message, 'error');
         }
     };
     useEffect(() => { reload(); }, [device.id, device.ip, device.apiToken]);
 
+    const clampToLimits = (v: number) =>
+        Math.min(limClose, Math.max(limOpen, Math.round(v)));
+
     const apply = async (f: Favorite) => {
         try {
-            await client.set(f.target_pct);
+            await client.set(clampToLimits(f.target_pct));
             toast(`→ ${f.name || `${f.target_pct} %`}`, 'ok');
         } catch (e: any) {
             toast(e.message, 'error');
@@ -239,7 +251,7 @@ function FavoritesPanel({
             toast('Ya tienes el máximo de favoritas (6)', 'info');
             return;
         }
-        setEditing({ ...empty, enabled: true, name: '', target_pct: currentPct });
+        setEditing({ ...empty, enabled: true, name: '', target_pct: clampToLimits(currentPct) });
     };
 
     const saveEditing = async () => {
@@ -288,23 +300,28 @@ function FavoritesPanel({
                 </View>
                 <Slider
                     style={{ width: '100%', height: 32 }}
-                    minimumValue={0}
-                    maximumValue={100}
+                    minimumValue={limOpen}
+                    maximumValue={limClose}
                     step={1}
-                    value={editing.target_pct}
+                    value={Math.min(limClose, Math.max(limOpen, editing.target_pct))}
                     minimumTrackTintColor={tint}
                     maximumTrackTintColor="rgba(255,255,255,0.10)"
                     thumbTintColor={tint}
                     onValueChange={(v) => setEditing({ ...editing, target_pct: Math.round(v) })}
                 />
+                {limOpen > 0 || limClose < 100 ? (
+                    <Text className="text-muted text-xs mt-0.5">
+                        Limitado a {limOpen}–{limClose} % por los topes del nodo.
+                    </Text>
+                ) : null}
                 <Pressable
-                    onPress={() => setEditing({ ...editing, target_pct: currentPct })}
+                    onPress={() => setEditing({ ...editing, target_pct: clampToLimits(currentPct) })}
                     className="mt-2 self-start"
                     android_ripple={{ color: 'rgba(255,255,255,0.05)' }}
                 >
                     <View className="flex-row items-center px-3 py-1.5 rounded-md" style={{ backgroundColor: 'rgba(78,161,255,0.10)' }}>
                         <Ionicons name="locate-outline" size={12} color={colors.primary} style={{ marginRight: 4 }} />
-                        <Text className="text-primary text-xs font-semibold">Usar posición actual ({currentPct} %)</Text>
+                        <Text className="text-primary text-xs font-semibold">Usar posición actual ({clampToLimits(currentPct)} %)</Text>
                     </View>
                 </Pressable>
 
@@ -340,7 +357,9 @@ function FavoritesPanel({
                 </Text>
             ) : (
                 <View className="flex-row flex-wrap gap-2">
-                    {enabled.map((f) => (
+                    {enabled.map((f) => {
+                        const outOfLimits = f.target_pct < limOpen || f.target_pct > limClose;
+                        return (
                         <View
                             key={f.i}
                             className="rounded-2xl overflow-hidden border border-border"
@@ -351,6 +370,14 @@ function FavoritesPanel({
                                     <Ionicons name="star" size={12} color={tint} style={{ marginRight: 6 }} />
                                     <Text className="text-fg text-sm font-semibold mr-2">{f.name || `#${f.i + 1}`}</Text>
                                     <Text className="text-muted text-xs font-mono">{f.target_pct}%</Text>
+                                    {outOfLimits ? (
+                                        <Ionicons
+                                            name="warning"
+                                            size={12}
+                                            color={colors.warn}
+                                            style={{ marginLeft: 6 }}
+                                        />
+                                    ) : null}
                                 </View>
                             </Pressable>
                             <View className="flex-row border-t border-border">
@@ -371,7 +398,8 @@ function FavoritesPanel({
                                 </Pressable>
                             </View>
                         </View>
-                    ))}
+                        );
+                    })}
                 </View>
             )}
         </Card>
@@ -999,7 +1027,7 @@ function AdvancedTab({ device }: { device: SavedDevice }) {
                     label="Quitar de mi lista"
                     variant="ghost"
                     full
-                    onPress={() => { remove(deviceId); router.back(); }}
+                    onPress={() => { remove(device.id); router.back(); }}
                     icon={<Ionicons name="trash-outline" size={14} color={colors.fg} />}
                 />
             </Card>

@@ -100,7 +100,12 @@ export default function RoomsScreen() {
                                 <Button label="Cancelar" variant="ghost" full onPress={() => setEditingId(null)} />
                             </View>
                             <View className="flex-1">
-                                <Button label="Guardar" full onPress={saveDraft} />
+                                <Button
+                                    label="Guardar"
+                                    full
+                                    onPress={saveDraft}
+                                    disabled={!draftName.trim()}
+                                />
                             </View>
                         </View>
                     </Card>

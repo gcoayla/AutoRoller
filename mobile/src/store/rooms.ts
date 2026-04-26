@@ -85,6 +85,22 @@ export const useRooms = create<State>()(
         {
             name: 'autoroller.rooms',
             storage: createJSONStorage(() => AsyncStorage),
+            version: 1,
+            migrate: (persisted: any, _version) => {
+                if (!persisted) return persisted;
+                const rooms: Room[] = Array.isArray(persisted.rooms)
+                    ? persisted.rooms
+                          .filter((r: any) => r && typeof r.id === 'string' && typeof r.name === 'string')
+                          .map((r: any, idx: number) => ({
+                              id:    r.id,
+                              name:  r.name,
+                              icon:  typeof r.icon  === 'string' ? r.icon  : undefined,
+                              color: typeof r.color === 'string' ? r.color : undefined,
+                              order: typeof r.order === 'number' ? r.order : idx,
+                          }))
+                    : [];
+                return { ...persisted, rooms };
+            },
         },
     ),
 );

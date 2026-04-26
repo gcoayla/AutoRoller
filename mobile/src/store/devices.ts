@@ -97,6 +97,19 @@ export const useDevices = create<State>()(
             storage: createJSONStorage(() => AsyncStorage),
             // No persistimos status/onlineMap.
             partialize: (state) => ({ devices: state.devices }) as any,
+            version: 1,
+            // Migración defensiva: si el shape de SavedDevice cambia en el
+            // futuro, transformar aquí. v1 ya soporta roomId/apiToken
+            // opcionales, así que basta con descartar entradas inválidas.
+            migrate: (persisted: any, _version) => {
+                if (!persisted) return persisted;
+                const list: SavedDevice[] = Array.isArray(persisted.devices)
+                    ? persisted.devices.filter((d: any) =>
+                          d && typeof d.id === 'string' && typeof d.hostname === 'string',
+                      )
+                    : [];
+                return { ...persisted, devices: list };
+            },
         },
     ),
 );

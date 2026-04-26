@@ -72,6 +72,14 @@ export default function BleSetupScreen() {
                             if (cfg.mqtt_base_topic) setMqttBase(cfg.mqtt_base_topic);
                         }
                         if (cfg?.timezone) setTz(cfg.timezone);
+                        if (typeof cfg?.limit_open  === 'number') setLimOpen(cfg.limit_open);
+                        if (typeof cfg?.limit_close === 'number') setLimClose(cfg.limit_close);
+                        // roomId vive en la app, no en el firmware: leemos
+                        // del SavedDevice si está.
+                        try {
+                            const cur = useDevices.getState().devices.find((d) => d.id === existing);
+                            if (cur?.roomId) setRoomId(cur.roomId);
+                        } catch {}
                     } catch {}
                     setStep('wifi');
                     // disparamos el escaneo
@@ -157,13 +165,15 @@ export default function BleSetupScreen() {
                 server: 'pool.ntp.org',
                 timezone: tz,
             });
-            // Aplicamos límites de seguridad si el usuario los cambió.
-            if (limOpen !== 0 || limClose !== 100) {
-                await session.setMotor({
-                    limit_open: limOpen,
-                    limit_close: limClose,
-                });
-            }
+            // Aplicamos límites siempre (incluso 0/100): si el usuario quita
+            // los topes en una reconfiguración, queremos que se aplique.
+            // Validamos que open < close por si acaso.
+            const safeOpen  = Math.min(limOpen, 99);
+            const safeClose = Math.max(limClose, safeOpen + 1);
+            await session.setMotor({
+                limit_open:  safeOpen,
+                limit_close: safeClose,
+            });
             // pedimos info para conocer la IP final
             try {
                 const info: any = await session.info();
