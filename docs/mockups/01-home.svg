@@ -31,7 +31,6 @@
         </linearGradient>
     </defs>
 
-    <!-- Fondo -->
     <rect width="390" height="844" fill="url(#bg)"/>
     <rect width="390" height="844" fill="url(#halo1)"/>
     <rect width="390" height="844" fill="url(#halo2)"/>
@@ -44,13 +43,12 @@
         <rect x="10" y="0" width="3"  height="15" rx="1"/>
         <rect x="20" y="2" width="14" height="11" rx="2.5" fill="none" stroke="#E6ECF5" stroke-width="1.2"/>
         <rect x="22" y="4" width="10" height="7"  rx="1"/>
-        <rect x="35" y="5" width="2"  height="5"  rx="1"/>
     </g>
 
     <!-- Header -->
     <text x="20" y="78" fill="#7B89A6" font-size="11" letter-spacing="2.5" font-weight="600">ESTACIÓN DE CONTROL</text>
-    <text x="20" y="108" fill="#E6ECF5" font-size="30" font-weight="800">AutoRoller</text>
-    <text x="20" y="130" fill="#7B89A6" font-size="13">3 dispositivos · 3 online</text>
+    <text x="20" y="106" fill="#E6ECF5" font-size="28" font-weight="800">AutoRoller</text>
+    <text x="20" y="126" fill="#7B89A6" font-size="12">3 dispositivos · 3 online</text>
 
     <!-- Botón ajustes -->
     <g transform="translate(338,86)">
@@ -61,137 +59,150 @@
         </g>
     </g>
 
-    <!-- Card: Control de grupo -->
-    <g transform="translate(20,158)">
-        <rect width="350" height="100" rx="18" fill="#16213A" stroke="#1E2D54"/>
-        <text x="20" y="32" fill="#7B89A6" font-size="10" letter-spacing="2.5" font-weight="700">CONTROL DE GRUPO</text>
+    <!-- Escenas rápidas (chips) -->
+    <g transform="translate(20,150)">
+        <text x="0" y="6" fill="#7B89A6" font-size="10" letter-spacing="2.5" font-weight="700">ESCENAS RÁPIDAS</text>
+        <text x="350" y="6" text-anchor="end" fill="#4EA1FF" font-size="10" font-weight="700">Ver todas</text>
 
-        <!-- Subir todo (gradient) -->
-        <g transform="translate(20,46)">
-            <rect width="100" height="40" rx="12" fill="url(#fab)"/>
-            <text x="50" y="25" text-anchor="middle" fill="#061226" font-size="13" font-weight="700">▲ Subir todo</text>
-        </g>
-        <!-- Parar (warn) -->
-        <g transform="translate(125,46)">
-            <rect width="100" height="40" rx="12" fill="rgba(255,176,78,0.10)" stroke="rgba(255,176,78,0.40)"/>
-            <text x="50" y="25" text-anchor="middle" fill="#FFB04E" font-size="13" font-weight="700">■ Parar</text>
-        </g>
-        <!-- Bajar todo (gradient) -->
-        <g transform="translate(230,46)">
-            <rect width="100" height="40" rx="12" fill="url(#fab)"/>
-            <text x="50" y="25" text-anchor="middle" fill="#061226" font-size="13" font-weight="700">▼ Bajar todo</text>
+        <g transform="translate(0,16)">
+            <!-- Chip Modo Cine -->
+            <g>
+                <rect width="118" height="40" rx="14" fill="rgba(255,255,255,0.03)" stroke="#1E2D54"/>
+                <g transform="translate(12,12)" fill="none" stroke="#4EA1FF" stroke-width="1.4">
+                    <rect width="16" height="12" rx="1.5"/>
+                    <line x1="0" y1="3" x2="16" y2="3"/>
+                    <line x1="0" y1="9" x2="16" y2="9"/>
+                </g>
+                <text x="38" y="25" fill="#E6ECF5" font-size="13" font-weight="700">Modo Cine</text>
+            </g>
+            <!-- Chip Buenas Noches -->
+            <g transform="translate(126,0)">
+                <rect width="148" height="40" rx="14" fill="rgba(255,255,255,0.03)" stroke="#1E2D54"/>
+                <g transform="translate(12,12)" fill="none" stroke="#4EA1FF" stroke-width="1.4" stroke-linecap="round">
+                    <path d="M14 3 a8 8 0 1 0 0 12 a6 6 0 0 1 0 -12"/>
+                </g>
+                <text x="38" y="25" fill="#E6ECF5" font-size="13" font-weight="700">Buenas Noches</text>
+            </g>
+            <!-- Chip Despertador -->
+            <g transform="translate(282,0)">
+                <rect width="118" height="40" rx="14" fill="rgba(255,255,255,0.03)" stroke="#1E2D54"/>
+                <g transform="translate(12,12)" fill="none" stroke="#4EA1FF" stroke-width="1.4" stroke-linecap="round">
+                    <circle cx="8" cy="8" r="6"/>
+                    <line x1="8" y1="8" x2="8" y2="4"/>
+                    <line x1="8" y1="8" x2="11" y2="9"/>
+                </g>
+                <text x="38" y="25" fill="#E6ECF5" font-size="13" font-weight="700">Despertar</text>
+            </g>
         </g>
     </g>
 
-    <!-- Device card 1: Salón -->
-    <g transform="translate(20,278)">
-        <rect width="350" height="148" rx="18" fill="#16213A" stroke="#1E2D54"/>
-        <rect width="350" height="148" rx="18" fill="url(#cardA)"/>
+    <!-- Header sección Salón -->
+    <g transform="translate(20,224)">
+        <g transform="translate(0,2)" fill="none" stroke="#4EA1FF" stroke-width="1.4">
+            <path d="M0 7 L7 1 L14 7 V12 H0 Z"/>
+            <line x1="3" y1="12" x2="3" y2="9"/>
+        </g>
+        <text x="22" y="11" fill="#E6ECF5" font-size="11" font-weight="700" letter-spacing="2">SALÓN</text>
+        <text x="80" y="11" fill="#7B89A6" font-size="11">·  2</text>
 
-        <!-- Dot + nombre -->
+        <!-- mini buttons -->
+        <g transform="translate(296,-4)">
+            <rect width="28" height="22" rx="6" fill="rgba(78,161,255,0.08)" stroke="rgba(78,161,255,0.20)"/>
+            <path d="M14 7 L14 15 M10 11 L14 7 L18 11" fill="none" stroke="#4EA1FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+        <g transform="translate(328,-4)">
+            <rect width="28" height="22" rx="6" fill="rgba(255,176,78,0.08)" stroke="rgba(255,176,78,0.20)"/>
+            <rect x="10" y="7" width="8" height="8" fill="#FFB04E" rx="1"/>
+        </g>
+        <g transform="translate(360,-4)">
+            <rect width="20" height="22" rx="6" fill="rgba(78,161,255,0.08)" stroke="rgba(78,161,255,0.20)"/>
+            <path d="M10 7 L10 15 M6 11 L10 15 L14 11" fill="none" stroke="#4EA1FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </g>
+    </g>
+
+    <!-- Card Salón cortina principal -->
+    <g transform="translate(20,254)">
+        <rect width="350" height="120" rx="18" fill="#16213A" stroke="#1E2D54"/>
+        <rect width="350" height="120" rx="18" fill="url(#cardA)"/>
+
         <circle cx="22" cy="26" r="4" fill="#4EA1FF"/>
-        <text x="34" y="30" fill="#E6ECF5" font-size="16" font-weight="700">autoroller-salon</text>
-        <text x="170" y="30" fill="#FFB04E" font-size="11">★</text>
+        <text x="34" y="30" fill="#E6ECF5" font-size="15" font-weight="700">autoroller-salon</text>
 
-        <!-- Pill estado -->
         <g transform="translate(265,16)">
             <rect width="68" height="22" rx="11" fill="rgba(78,161,255,0.16)"/>
             <circle cx="14" cy="11" r="3" fill="#4EA1FF"/>
             <text x="22" y="15" fill="#4EA1FF" font-size="10" font-weight="700">SUBIENDO</text>
         </g>
+        <text x="34" y="48" fill="#7B89A6" font-size="11">192.168.1.42 · -52 dBm</text>
 
-        <!-- IP / RSSI -->
-        <text x="34" y="50" fill="#7B89A6" font-size="11">192.168.1.42 · -52 dBm</text>
-
-        <!-- Barra de posición -->
-        <rect x="22" y="76" width="306" height="6" rx="3" fill="rgba(255,255,255,0.08)"/>
-        <rect x="22" y="76" width="116" height="6" rx="3" fill="#4EA1FF"/>
-        <text x="22" y="100" fill="#7B89A6" font-size="11">38 % cerrada</text>
-        <text x="328" y="100" text-anchor="end" fill="#7B89A6" font-size="11">Calibrada</text>
-
-        <!-- Acciones rápidas -->
-        <g transform="translate(22,114)">
-            <rect width="98"  height="24" rx="8" fill="rgba(78,161,255,0.10)" stroke="rgba(78,161,255,0.25)"/>
-            <text x="49" y="16" text-anchor="middle" fill="#4EA1FF" font-size="11" font-weight="700">▲ Subir</text>
-        </g>
-        <g transform="translate(126,114)">
-            <rect width="98"  height="24" rx="8" fill="rgba(255,176,78,0.10)" stroke="rgba(255,176,78,0.25)"/>
-            <text x="49" y="16" text-anchor="middle" fill="#FFB04E" font-size="11" font-weight="700">■ Parar</text>
-        </g>
-        <g transform="translate(230,114)">
-            <rect width="98"  height="24" rx="8" fill="rgba(78,161,255,0.10)" stroke="rgba(78,161,255,0.25)"/>
-            <text x="49" y="16" text-anchor="middle" fill="#4EA1FF" font-size="11" font-weight="700">▼ Bajar</text>
-        </g>
+        <rect x="22" y="68" width="306" height="6" rx="3" fill="rgba(255,255,255,0.08)"/>
+        <rect x="22" y="68" width="116" height="6" rx="3" fill="#4EA1FF"/>
+        <text x="22" y="92" fill="#7B89A6" font-size="11">38 % cerrada</text>
+        <text x="328" y="92" text-anchor="end" fill="#7B89A6" font-size="11">Calibrada</text>
     </g>
 
-    <!-- Device card 2: Cocina -->
-    <g transform="translate(20,442)">
-        <rect width="350" height="148" rx="18" fill="#16213A" stroke="#1E2D54"/>
-        <rect width="350" height="148" rx="18" fill="url(#cardB)"/>
+    <!-- Card Salón cortina velo -->
+    <g transform="translate(20,388)">
+        <rect width="350" height="120" rx="18" fill="#16213A" stroke="#1E2D54"/>
+        <rect width="350" height="120" rx="18" fill="url(#cardB)"/>
 
         <circle cx="22" cy="26" r="4" fill="#B14EFF"/>
-        <text x="34" y="30" fill="#E6ECF5" font-size="16" font-weight="700">autoroller-cocina</text>
+        <text x="34" y="30" fill="#E6ECF5" font-size="15" font-weight="700">autoroller-velo</text>
 
-        <g transform="translate(284,16)">
+        <g transform="translate(286,16)">
             <rect width="48" height="22" rx="11" fill="rgba(78,255,177,0.12)"/>
             <circle cx="9" cy="11" r="3" fill="#4EFFB1"/>
             <text x="17" y="15" fill="#4EFFB1" font-size="10" font-weight="700">REPOSO</text>
         </g>
+        <text x="34" y="48" fill="#7B89A6" font-size="11">192.168.1.43 · -58 dBm</text>
 
-        <text x="34" y="50" fill="#7B89A6" font-size="11">192.168.1.43 · -61 dBm</text>
+        <rect x="22" y="68" width="306" height="6" rx="3" fill="rgba(255,255,255,0.08)"/>
+        <rect x="22" y="68" width="60" height="6" rx="3" fill="#B14EFF"/>
+        <text x="22" y="92" fill="#7B89A6" font-size="11">20 % cerrada</text>
+        <text x="328" y="92" text-anchor="end" fill="#7B89A6" font-size="11">Calibrada</text>
+    </g>
 
-        <rect x="22" y="76" width="306" height="6" rx="3" fill="rgba(255,255,255,0.08)"/>
-        <rect x="22" y="76" width="306" height="6" rx="3" fill="#B14EFF"/>
-        <text x="22" y="100" fill="#7B89A6" font-size="11">100 % cerrada</text>
-        <text x="328" y="100" text-anchor="end" fill="#7B89A6" font-size="11">Calibrada</text>
-
-        <g transform="translate(22,114)">
-            <rect width="98" height="24" rx="8" fill="rgba(177,78,255,0.10)" stroke="rgba(177,78,255,0.25)"/>
-            <text x="49" y="16" text-anchor="middle" fill="#B14EFF" font-size="11" font-weight="700">▲ Subir</text>
+    <!-- Header sección Dormitorio -->
+    <g transform="translate(20,524)">
+        <g transform="translate(0,2)" fill="none" stroke="#4EA1FF" stroke-width="1.4" stroke-linecap="round">
+            <path d="M2 11 H14 V8 a3 3 0 0 0 -3 -3 H6 a3 3 0 0 0 -3 3 Z M0 11 V14 M14 11 V14"/>
         </g>
-        <g transform="translate(126,114)">
-            <rect width="98" height="24" rx="8" fill="rgba(255,176,78,0.10)" stroke="rgba(255,176,78,0.25)"/>
-            <text x="49" y="16" text-anchor="middle" fill="#FFB04E" font-size="11" font-weight="700">■ Parar</text>
+        <text x="22" y="11" fill="#E6ECF5" font-size="11" font-weight="700" letter-spacing="2">DORMITORIO</text>
+        <text x="118" y="11" fill="#7B89A6" font-size="11">·  1</text>
+
+        <g transform="translate(296,-4)">
+            <rect width="28" height="22" rx="6" fill="rgba(78,161,255,0.08)" stroke="rgba(78,161,255,0.20)"/>
+            <path d="M14 7 L14 15 M10 11 L14 7 L18 11" fill="none" stroke="#4EA1FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </g>
-        <g transform="translate(230,114)">
-            <rect width="98" height="24" rx="8" fill="rgba(177,78,255,0.10)" stroke="rgba(177,78,255,0.25)"/>
-            <text x="49" y="16" text-anchor="middle" fill="#B14EFF" font-size="11" font-weight="700">▼ Bajar</text>
+        <g transform="translate(328,-4)">
+            <rect width="28" height="22" rx="6" fill="rgba(255,176,78,0.08)" stroke="rgba(255,176,78,0.20)"/>
+            <rect x="10" y="7" width="8" height="8" fill="#FFB04E" rx="1"/>
+        </g>
+        <g transform="translate(360,-4)">
+            <rect width="20" height="22" rx="6" fill="rgba(78,161,255,0.08)" stroke="rgba(78,161,255,0.20)"/>
+            <path d="M10 7 L10 15 M6 11 L10 15 L14 11" fill="none" stroke="#4EA1FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
         </g>
     </g>
 
-    <!-- Device card 3: Dormitorio -->
-    <g transform="translate(20,606)">
-        <rect width="350" height="148" rx="18" fill="#16213A" stroke="#1E2D54"/>
-        <rect width="350" height="148" rx="18" fill="url(#cardC)"/>
+    <!-- Card Dormitorio -->
+    <g transform="translate(20,554)">
+        <rect width="350" height="120" rx="18" fill="#16213A" stroke="#1E2D54"/>
+        <rect width="350" height="120" rx="18" fill="url(#cardC)"/>
 
         <circle cx="22" cy="26" r="4" fill="#4EFFB1"/>
-        <text x="34" y="30" fill="#E6ECF5" font-size="16" font-weight="700">autoroller-dormitorio</text>
+        <text x="34" y="30" fill="#E6ECF5" font-size="15" font-weight="700">autoroller-dormitorio</text>
 
-        <g transform="translate(284,16)">
+        <g transform="translate(286,16)">
             <rect width="48" height="22" rx="11" fill="rgba(78,255,177,0.12)"/>
             <circle cx="9" cy="11" r="3" fill="#4EFFB1"/>
             <text x="17" y="15" fill="#4EFFB1" font-size="10" font-weight="700">REPOSO</text>
         </g>
+        <text x="34" y="48" fill="#7B89A6" font-size="11">192.168.1.44 · -68 dBm</text>
 
-        <text x="34" y="50" fill="#7B89A6" font-size="11">192.168.1.44 · -68 dBm</text>
-
-        <rect x="22" y="76" width="306" height="6" rx="3" fill="rgba(255,255,255,0.08)"/>
-        <rect x="22" y="76" width="0" height="6" rx="3" fill="#4EFFB1"/>
-        <text x="22" y="100" fill="#7B89A6" font-size="11">0 % cerrada</text>
-        <text x="328" y="100" text-anchor="end" fill="#7B89A6" font-size="11">Calibrada</text>
-
-        <g transform="translate(22,114)">
-            <rect width="98" height="24" rx="8" fill="rgba(78,255,177,0.10)" stroke="rgba(78,255,177,0.25)"/>
-            <text x="49" y="16" text-anchor="middle" fill="#4EFFB1" font-size="11" font-weight="700">▲ Subir</text>
-        </g>
-        <g transform="translate(126,114)">
-            <rect width="98" height="24" rx="8" fill="rgba(255,176,78,0.10)" stroke="rgba(255,176,78,0.25)"/>
-            <text x="49" y="16" text-anchor="middle" fill="#FFB04E" font-size="11" font-weight="700">■ Parar</text>
-        </g>
-        <g transform="translate(230,114)">
-            <rect width="98" height="24" rx="8" fill="rgba(78,255,177,0.10)" stroke="rgba(78,255,177,0.25)"/>
-            <text x="49" y="16" text-anchor="middle" fill="#4EFFB1" font-size="11" font-weight="700">▼ Bajar</text>
-        </g>
+        <rect x="22" y="68" width="306" height="6" rx="3" fill="rgba(255,255,255,0.08)"/>
+        <rect x="22" y="68" width="306" height="6" rx="3" fill="#4EFFB1"/>
+        <text x="22" y="92" fill="#7B89A6" font-size="11">100 % cerrada</text>
+        <text x="328" y="92" text-anchor="end" fill="#7B89A6" font-size="11">Calibrada</text>
     </g>
 
     <!-- FAB -->

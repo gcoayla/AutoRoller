@@ -1,0 +1,130 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 844" width="390" height="844" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif">
+    <defs>
+        <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#050811"/>
+            <stop offset="40%" stop-color="#080F22"/>
+            <stop offset="100%" stop-color="#050811"/>
+        </linearGradient>
+        <radialGradient id="halo1" cx="0.85" cy="0.05" r="0.5">
+            <stop offset="0%" stop-color="#B14EFF" stop-opacity="0.18"/>
+            <stop offset="100%" stop-color="#B14EFF" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="halo2" cx="0.05" cy="1.0" r="0.6">
+            <stop offset="0%" stop-color="#4EA1FF" stop-opacity="0.14"/>
+            <stop offset="100%" stop-color="#4EA1FF" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="primary" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#4EA1FF"/>
+            <stop offset="100%" stop-color="#7BC1FF"/>
+        </linearGradient>
+    </defs>
+
+    <rect width="390" height="844" fill="url(#bg)"/>
+    <rect width="390" height="844" fill="url(#halo1)"/>
+    <rect width="390" height="844" fill="url(#halo2)"/>
+
+    <!-- Status bar -->
+    <text x="32" y="34" fill="#E6ECF5" font-size="14" font-weight="600">9:41</text>
+    <g transform="translate(330,22)" fill="#E6ECF5">
+        <rect x="0" y="6" width="3" height="9" rx="1"/>
+        <rect x="5" y="3" width="3" height="12" rx="1"/>
+        <rect x="10" y="0" width="3" height="15" rx="1"/>
+        <rect x="20" y="2" width="14" height="11" rx="2.5" fill="none" stroke="#E6ECF5" stroke-width="1.2"/>
+        <rect x="22" y="4" width="10" height="7" rx="1"/>
+    </g>
+
+    <!-- Header -->
+    <g transform="translate(20,68)">
+        <text x="0" y="6" fill="#E6ECF5" font-size="20" font-weight="700">‹  Habitaciones</text>
+    </g>
+
+    <!-- Card explicativa con botón "Nueva habitación" -->
+    <g transform="translate(20,108)">
+        <rect width="350" height="158" rx="18" fill="#16213A" stroke="#1E2D54"/>
+        <text x="20" y="32" fill="#7B89A6" font-size="10" letter-spacing="2.5" font-weight="700">ORGANIZA TUS DISPOSITIVOS</text>
+        <text x="20" y="56" fill="#E6ECF5" font-size="18" font-weight="700">Habitaciones</text>
+        <text x="20" y="80" fill="#7B89A6" font-size="13">Las habitaciones agrupan dispositivos en el</text>
+        <text x="20" y="98" fill="#7B89A6" font-size="13">Home y permiten acciones rápidas por sala.</text>
+        <text x="20" y="114" fill="#7B89A6" font-size="13">Asignar una es opcional.</text>
+
+        <rect x="20" y="128" width="310" height="20" rx="11" fill="url(#primary)"/>
+        <text x="175" y="142" text-anchor="middle" fill="#061226" font-size="13" font-weight="700">+ Nueva habitación</text>
+    </g>
+
+    <!-- Lista de habitaciones -->
+    <g transform="translate(20,282)">
+        <text x="0" y="0" fill="#7B89A6" font-size="10" letter-spacing="2.5" font-weight="700">3 HABITACIONES</text>
+    </g>
+
+    <!-- Habitación: Salón -->
+    <g transform="translate(20,300)">
+        <rect width="350" height="76" rx="18" fill="#16213A" stroke="#1E2D54"/>
+        <!-- icono -->
+        <rect x="14" y="18" width="40" height="40" rx="12" fill="rgba(78,161,255,0.10)"/>
+        <g transform="translate(24,28)" fill="none" stroke="#4EA1FF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M0 10 L10 0 L20 10 V20 H0 Z"/>
+            <line x1="6" y1="20" x2="6" y2="14"/>
+            <line x1="14" y1="20" x2="14" y2="14"/>
+        </g>
+        <!-- texto -->
+        <text x="64" y="32" fill="#E6ECF5" font-size="15" font-weight="700">Salón</text>
+        <text x="64" y="50" fill="#7B89A6" font-size="11">2 dispositivos</text>
+        <!-- iconos derecha -->
+        <g transform="translate(282,30)" fill="none" stroke="#7B89A6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M0 12 L0 16 L4 16 L14 6 L10 2 Z"/>
+        </g>
+        <g transform="translate(322,28)" fill="none" stroke="#7B89A6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 4 H16 M5 4 V2 H13 V4 M4 4 L6 18 H14 L16 4"/>
+        </g>
+    </g>
+
+    <!-- Habitación: Cocina -->
+    <g transform="translate(20,388)">
+        <rect width="350" height="76" rx="18" fill="#16213A" stroke="#1E2D54"/>
+        <rect x="14" y="18" width="40" height="40" rx="12" fill="rgba(78,161,255,0.10)"/>
+        <!-- icono cubiertos -->
+        <g transform="translate(28,28)" fill="none" stroke="#4EA1FF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 0 L2 8 a4 4 0 0 0 4 4 V20"/>
+            <path d="M6 0 L6 6"/>
+            <path d="M10 0 L10 6"/>
+            <path d="M14 0 V20 M14 0 a3 3 0 0 1 3 3 V8 a3 3 0 0 1 -3 3"/>
+        </g>
+        <text x="64" y="32" fill="#E6ECF5" font-size="15" font-weight="700">Cocina</text>
+        <text x="64" y="50" fill="#7B89A6" font-size="11">1 dispositivo</text>
+        <g transform="translate(282,30)" fill="none" stroke="#7B89A6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M0 12 L0 16 L4 16 L14 6 L10 2 Z"/>
+        </g>
+        <g transform="translate(322,28)" fill="none" stroke="#7B89A6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 4 H16 M5 4 V2 H13 V4 M4 4 L6 18 H14 L16 4"/>
+        </g>
+    </g>
+
+    <!-- Habitación: Dormitorio -->
+    <g transform="translate(20,476)">
+        <rect width="350" height="76" rx="18" fill="#16213A" stroke="#1E2D54"/>
+        <rect x="14" y="18" width="40" height="40" rx="12" fill="rgba(78,161,255,0.10)"/>
+        <!-- icono cama -->
+        <g transform="translate(22,32)" fill="none" stroke="#4EA1FF" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 12 H22 V8 a3 3 0 0 0 -3 -3 H10 a3 3 0 0 0 -3 3 Z"/>
+            <line x1="0" y1="12" x2="0" y2="16"/>
+            <line x1="22" y1="12" x2="22" y2="16"/>
+        </g>
+        <text x="64" y="32" fill="#E6ECF5" font-size="15" font-weight="700">Dormitorio</text>
+        <text x="64" y="50" fill="#7B89A6" font-size="11">1 dispositivo</text>
+        <g transform="translate(282,30)" fill="none" stroke="#7B89A6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M0 12 L0 16 L4 16 L14 6 L10 2 Z"/>
+        </g>
+        <g transform="translate(322,28)" fill="none" stroke="#7B89A6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 4 H16 M5 4 V2 H13 V4 M4 4 L6 18 H14 L16 4"/>
+        </g>
+    </g>
+
+    <!-- Toast confirmación -->
+    <g transform="translate(20,750)">
+        <rect width="350" height="44" rx="14" fill="rgba(78,255,177,0.16)" stroke="#1E2D54"/>
+        <circle cx="24" cy="22" r="10" fill="none" stroke="#4EFFB1" stroke-width="1.5"/>
+        <path d="M19 23 l3.5 3.5 L30 19" fill="none" stroke="#4EFFB1" stroke-width="1.7"
+              stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="44" y="27" fill="#E6ECF5" font-size="13">Habitación creada</text>
+    </g>
+</svg>

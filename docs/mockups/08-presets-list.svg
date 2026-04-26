@@ -1,0 +1,146 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 844" width="390" height="844" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif">
+    <defs>
+        <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#050811"/>
+            <stop offset="40%" stop-color="#080F22"/>
+            <stop offset="100%" stop-color="#050811"/>
+        </linearGradient>
+        <radialGradient id="halo1" cx="0.85" cy="0.05" r="0.5">
+            <stop offset="0%" stop-color="#B14EFF" stop-opacity="0.18"/>
+            <stop offset="100%" stop-color="#B14EFF" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="halo2" cx="0.05" cy="1.0" r="0.6">
+            <stop offset="0%" stop-color="#4EA1FF" stop-opacity="0.14"/>
+            <stop offset="100%" stop-color="#4EA1FF" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="primary" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#4EA1FF"/>
+            <stop offset="100%" stop-color="#7BC1FF"/>
+        </linearGradient>
+        <linearGradient id="cardA" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#4EA1FF" stop-opacity="0.16"/>
+            <stop offset="100%" stop-color="#4EA1FF" stop-opacity="0"/>
+        </linearGradient>
+    </defs>
+
+    <rect width="390" height="844" fill="url(#bg)"/>
+    <rect width="390" height="844" fill="url(#halo1)"/>
+    <rect width="390" height="844" fill="url(#halo2)"/>
+
+    <text x="32" y="34" fill="#E6ECF5" font-size="14" font-weight="600">9:41</text>
+    <g transform="translate(330,22)" fill="#E6ECF5">
+        <rect x="0" y="6" width="3" height="9" rx="1"/>
+        <rect x="5" y="3" width="3" height="12" rx="1"/>
+        <rect x="10" y="0" width="3" height="15" rx="1"/>
+        <rect x="20" y="2" width="14" height="11" rx="2.5" fill="none" stroke="#E6ECF5" stroke-width="1.2"/>
+        <rect x="22" y="4" width="10" height="7" rx="1"/>
+    </g>
+
+    <!-- Header -->
+    <g transform="translate(20,68)">
+        <text x="0" y="6" fill="#E6ECF5" font-size="20" font-weight="700">‹  Presets</text>
+    </g>
+
+    <!-- Card explicativa -->
+    <g transform="translate(20,108)">
+        <rect width="350" height="160" rx="18" fill="#16213A" stroke="#1E2D54"/>
+        <text x="20" y="32" fill="#7B89A6" font-size="10" letter-spacing="2.5" font-weight="700">ESCENAS MULTI-DISPOSITIVO</text>
+        <text x="20" y="56" fill="#E6ECF5" font-size="18" font-weight="700">Presets</text>
+        <text x="20" y="80" fill="#7B89A6" font-size="13">Combina posiciones de varias cortinas en un</text>
+        <text x="20" y="98" fill="#7B89A6" font-size="13">solo botón: "Modo Cine", "Buenas Noches",</text>
+        <text x="20" y="116" fill="#7B89A6" font-size="13">"Despertador"...</text>
+
+        <rect x="20" y="130" width="310" height="20" rx="11" fill="url(#primary)"/>
+        <text x="175" y="144" text-anchor="middle" fill="#061226" font-size="13" font-weight="700">+ Nuevo preset</text>
+    </g>
+
+    <!-- Preset Card: Modo Cine -->
+    <g transform="translate(20,290)">
+        <rect width="350" height="184" rx="18" fill="#16213A" stroke="#1E2D54"/>
+        <rect width="350" height="184" rx="18" fill="url(#cardA)"/>
+
+        <!-- icono cuadrado -->
+        <rect x="14" y="16" width="40" height="40" rx="12" fill="rgba(78,161,255,0.18)"/>
+        <g transform="translate(24,28)" fill="none" stroke="#4EA1FF" stroke-width="1.4">
+            <rect width="20" height="14" rx="1.5"/>
+            <line x1="0" y1="3.5" x2="20" y2="3.5"/>
+            <line x1="0" y1="10.5" x2="20" y2="10.5"/>
+        </g>
+
+        <text x="64" y="32" fill="#E6ECF5" font-size="16" font-weight="700">Modo Cine</text>
+        <text x="64" y="50" fill="#7B89A6" font-size="11">2 dispositivos</text>
+
+        <!-- iconos derecha (edit + trash) -->
+        <g transform="translate(282,28)" fill="none" stroke="#7B89A6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M0 12 L0 16 L4 16 L14 6 L10 2 Z"/>
+        </g>
+        <g transform="translate(322,28)" fill="none" stroke="#7B89A6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 4 H16 M5 4 V2 H13 V4 M4 4 L6 18 H14 L16 4"/>
+        </g>
+
+        <!-- Items chips -->
+        <g transform="translate(14,72)">
+            <rect width="166" height="22" rx="6" fill="rgba(255,255,255,0.05)"/>
+            <circle cx="10" cy="11" r="3" fill="#4EA1FF"/>
+            <text x="20" y="15" fill="#E6ECF5" font-size="11">autoroller-salon · 100%</text>
+        </g>
+        <g transform="translate(186,72)">
+            <rect width="148" height="22" rx="6" fill="rgba(255,255,255,0.05)"/>
+            <circle cx="10" cy="11" r="3" fill="#B14EFF"/>
+            <text x="20" y="15" fill="#E6ECF5" font-size="11">autoroller-velo · 80%</text>
+        </g>
+
+        <!-- Botón Activar -->
+        <rect x="14" y="106" width="322" height="36" rx="12" fill="url(#primary)"/>
+        <text x="175" y="129" text-anchor="middle" fill="#061226" font-size="14" font-weight="700">▶  Activar</text>
+    </g>
+
+    <!-- Preset Card: Buenas Noches -->
+    <g transform="translate(20,490)">
+        <rect width="350" height="184" rx="18" fill="#16213A" stroke="#1E2D54"/>
+        <rect width="350" height="184" rx="18" fill="url(#cardA)"/>
+
+        <rect x="14" y="16" width="40" height="40" rx="12" fill="rgba(78,161,255,0.18)"/>
+        <g transform="translate(28,30)" fill="none" stroke="#4EA1FF" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 4 a8 8 0 1 0 0 12 a6 6 0 0 1 0 -12"/>
+        </g>
+
+        <text x="64" y="32" fill="#E6ECF5" font-size="16" font-weight="700">Buenas Noches</text>
+        <text x="64" y="50" fill="#7B89A6" font-size="11">3 dispositivos</text>
+
+        <g transform="translate(282,28)" fill="none" stroke="#7B89A6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M0 12 L0 16 L4 16 L14 6 L10 2 Z"/>
+        </g>
+        <g transform="translate(322,28)" fill="none" stroke="#7B89A6" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M2 4 H16 M5 4 V2 H13 V4 M4 4 L6 18 H14 L16 4"/>
+        </g>
+
+        <g transform="translate(14,72)">
+            <rect width="166" height="22" rx="6" fill="rgba(255,255,255,0.05)"/>
+            <circle cx="10" cy="11" r="3" fill="#4EA1FF"/>
+            <text x="20" y="15" fill="#E6ECF5" font-size="11">autoroller-salon · 100%</text>
+        </g>
+        <g transform="translate(186,72)">
+            <rect width="148" height="22" rx="6" fill="rgba(255,255,255,0.05)"/>
+            <circle cx="10" cy="11" r="3" fill="#B14EFF"/>
+            <text x="20" y="15" fill="#E6ECF5" font-size="11">autoroller-velo · 100%</text>
+        </g>
+        <g transform="translate(14,100)">
+            <rect width="166" height="22" rx="6" fill="rgba(255,255,255,0.05)"/>
+            <circle cx="10" cy="11" r="3" fill="#4EFFB1"/>
+            <text x="20" y="15" fill="#E6ECF5" font-size="11">autoroller-dormitorio · 100%</text>
+        </g>
+
+        <rect x="14" y="134" width="322" height="36" rx="12" fill="url(#primary)"/>
+        <text x="175" y="157" text-anchor="middle" fill="#061226" font-size="14" font-weight="700">▶  Activar</text>
+    </g>
+
+    <!-- Toast resultado -->
+    <g transform="translate(20,750)">
+        <rect width="350" height="44" rx="14" fill="rgba(78,255,177,0.16)" stroke="#1E2D54"/>
+        <circle cx="24" cy="22" r="10" fill="none" stroke="#4EFFB1" stroke-width="1.5"/>
+        <path d="M19 23 l3.5 3.5 L30 19" fill="none" stroke="#4EFFB1" stroke-width="1.7"
+              stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="44" y="27" fill="#E6ECF5" font-size="13">Modo Cine: 2/2 aplicados</text>
+    </g>
+</svg>

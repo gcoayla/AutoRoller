@@ -1,0 +1,132 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 844" width="390" height="844" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif">
+    <defs>
+        <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#050811"/>
+            <stop offset="40%" stop-color="#080F22"/>
+            <stop offset="100%" stop-color="#050811"/>
+        </linearGradient>
+        <radialGradient id="halo1" cx="0.85" cy="0.05" r="0.5">
+            <stop offset="0%" stop-color="#B14EFF" stop-opacity="0.18"/>
+            <stop offset="100%" stop-color="#B14EFF" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="halo2" cx="0.05" cy="1.0" r="0.6">
+            <stop offset="0%" stop-color="#4EA1FF" stop-opacity="0.14"/>
+            <stop offset="100%" stop-color="#4EA1FF" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="primary" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#4EA1FF"/>
+            <stop offset="100%" stop-color="#7BC1FF"/>
+        </linearGradient>
+    </defs>
+
+    <rect width="390" height="844" fill="url(#bg)"/>
+    <rect width="390" height="844" fill="url(#halo1)"/>
+    <rect width="390" height="844" fill="url(#halo2)"/>
+
+    <text x="32" y="34" fill="#E6ECF5" font-size="14" font-weight="600">9:41</text>
+    <g transform="translate(330,22)" fill="#E6ECF5">
+        <rect x="0" y="6" width="3" height="9" rx="1"/>
+        <rect x="5" y="3" width="3" height="12" rx="1"/>
+        <rect x="10" y="0" width="3" height="15" rx="1"/>
+        <rect x="20" y="2" width="14" height="11" rx="2.5" fill="none" stroke="#E6ECF5" stroke-width="1.2"/>
+        <rect x="22" y="4" width="10" height="7" rx="1"/>
+    </g>
+
+    <!-- Header -->
+    <g transform="translate(20,68)">
+        <text x="0" y="6" fill="#E6ECF5" font-size="20" font-weight="700">‹</text>
+        <text x="32" y="2" fill="#E6ECF5" font-size="17" font-weight="700">autoroller-salon</text>
+        <text x="32" y="22" fill="#7B89A6" font-size="12">192.168.1.42</text>
+        <g transform="translate(216,4)">
+            <rect width="48" height="22" rx="11" fill="rgba(78,255,177,0.12)"/>
+            <circle cx="9" cy="11" r="3" fill="#4EFFB1"/>
+            <text x="17" y="15" fill="#4EFFB1" font-size="10" font-weight="700">REPOSO</text>
+        </g>
+    </g>
+
+    <!-- Tabs (Ajustes activa) -->
+    <g transform="translate(20,116)">
+        <rect width="350" height="40" rx="14" fill="rgba(255,255,255,0.03)" stroke="#1E2D54"/>
+        <text x="46"  y="24" text-anchor="middle" fill="#7B89A6" font-size="11" font-weight="700">Control</text>
+        <text x="133" y="24" text-anchor="middle" fill="#7B89A6" font-size="11" font-weight="700">Programador</text>
+        <rect x="178" y="4" width="83" height="32" rx="11" fill="rgba(78,161,255,0.18)"/>
+        <text x="220" y="24" text-anchor="middle" fill="#4EA1FF" font-size="11" font-weight="700">Ajustes</text>
+        <text x="307" y="24" text-anchor="middle" fill="#7B89A6" font-size="11" font-weight="700">Avanzado</text>
+    </g>
+
+    <!-- Card: Límites de recorrido -->
+    <g transform="translate(20,178)">
+        <rect width="350" height="320" rx="18" fill="#16213A" stroke="#1E2D54"/>
+        <text x="20" y="32" fill="#7B89A6" font-size="10" letter-spacing="2.5" font-weight="700">PROTEGE LA CORTINA</text>
+        <text x="20" y="56" fill="#E6ECF5" font-size="18" font-weight="700">Límites de recorrido</text>
+        <text x="20" y="80" fill="#7B89A6" font-size="12">Define hasta dónde puede subir y bajar la cortina</text>
+        <text x="20" y="96" fill="#7B89A6" font-size="12">sin riesgo de forzar el riel o la tela.</text>
+
+        <!-- Tope abierto -->
+        <text x="20" y="128" fill="#7B89A6" font-size="9" letter-spacing="2" font-weight="700">TOPE ABIERTO</text>
+        <text x="328" y="130" text-anchor="end" fill="#E6ECF5" font-size="13" font-family="ui-monospace, monospace">10 %</text>
+        <rect x="20" y="142" width="310" height="6" rx="3" fill="#4EA1FF"/>
+        <rect x="20" y="142" width="31" height="6" rx="3" fill="rgba(255,255,255,0.10)"/>
+        <circle cx="51" cy="145" r="9" fill="#4EA1FF"/>
+        <text x="20" y="172" fill="#7B89A6" font-size="10">No abrirá más allá del 10 % (0 = totalmente arriba).</text>
+
+        <!-- Tope cerrado -->
+        <text x="20" y="208" fill="#7B89A6" font-size="9" letter-spacing="2" font-weight="700">TOPE CERRADO</text>
+        <text x="328" y="210" text-anchor="end" fill="#E6ECF5" font-size="13" font-family="ui-monospace, monospace">90 %</text>
+        <rect x="20" y="222" width="310" height="6" rx="3" fill="rgba(255,255,255,0.10)"/>
+        <rect x="20" y="222" width="279" height="6" rx="3" fill="#4EA1FF"/>
+        <circle cx="299" cy="225" r="9" fill="#4EA1FF"/>
+        <text x="20" y="252" fill="#7B89A6" font-size="10">No cerrará más allá del 90 % (100 = totalmente abajo).</text>
+
+        <!-- Botón aplicar -->
+        <rect x="20" y="270" width="310" height="36" rx="12" fill="url(#primary)"/>
+        <text x="175" y="293" text-anchor="middle" fill="#061226" font-size="14" font-weight="700">Aplicar límites</text>
+    </g>
+
+    <!-- Card: Habitación -->
+    <g transform="translate(20,514)">
+        <rect width="350" height="148" rx="18" fill="#16213A" stroke="#1E2D54"/>
+        <text x="20" y="32" fill="#7B89A6" font-size="10" letter-spacing="2.5" font-weight="700">ORGANIZACIÓN EN EL HOME</text>
+        <text x="20" y="56" fill="#E6ECF5" font-size="18" font-weight="700">Habitación</text>
+
+        <!-- Chips -->
+        <g transform="translate(20,76)">
+            <rect width="100" height="32" rx="11" fill="rgba(255,255,255,0.04)" stroke="#1E2D54"/>
+            <text x="50" y="20" text-anchor="middle" fill="#7B89A6" font-size="11" font-weight="700">Sin habitación</text>
+
+            <g transform="translate(108,0)">
+                <rect width="68" height="32" rx="11" fill="rgba(78,161,255,0.18)" stroke="#4EA1FF"/>
+                <g transform="translate(8,11)" fill="none" stroke="#4EA1FF" stroke-width="1.4">
+                    <path d="M0 7 L7 1 L14 7 V12 H0 Z"/>
+                </g>
+                <text x="46" y="20" text-anchor="middle" fill="#4EA1FF" font-size="11" font-weight="700">Salón</text>
+            </g>
+
+            <g transform="translate(184,0)">
+                <rect width="76" height="32" rx="11" fill="rgba(255,255,255,0.04)" stroke="#1E2D54"/>
+                <g transform="translate(10,11)" fill="none" stroke="#7B89A6" stroke-width="1.4" stroke-linecap="round">
+                    <path d="M2 0 L2 6 a3 3 0 0 0 3 3 V14"/>
+                    <path d="M9 0 V14 M9 0 a2 2 0 0 1 2 2 V6 a2 2 0 0 1 -2 2"/>
+                </g>
+                <text x="46" y="20" text-anchor="middle" fill="#E6ECF5" font-size="11" font-weight="700">Cocina</text>
+            </g>
+
+            <g transform="translate(268,0)">
+                <rect width="62" height="32" rx="11" fill="rgba(255,255,255,0.04)" stroke="#1E2D54"/>
+                <g transform="translate(8,15)" fill="none" stroke="#7B89A6" stroke-width="1.4" stroke-linecap="round">
+                    <path d="M2 7 H12 V5 a2 2 0 0 0 -2 -2 H4 a2 2 0 0 0 -2 2 Z"/>
+                </g>
+                <text x="40" y="20" text-anchor="middle" fill="#E6ECF5" font-size="11" font-weight="700">Dorm.</text>
+            </g>
+        </g>
+    </g>
+
+    <!-- Card: WiFi (resumen) -->
+    <g transform="translate(20,678)">
+        <rect width="350" height="116" rx="18" fill="#16213A" stroke="#1E2D54"/>
+        <text x="20" y="32" fill="#E6ECF5" font-size="16" font-weight="700">WiFi</text>
+        <text x="20" y="56" fill="#7B89A6" font-size="9" letter-spacing="2" font-weight="700">SSID ACTUAL</text>
+        <rect x="20" y="64" width="310" height="32" rx="11" fill="rgba(0,0,0,0.25)" stroke="#1E2D54"/>
+        <text x="32" y="84" fill="#7B89A6" font-size="13">MiWiFi  ·  Toca abajo para más opciones  ›</text>
+    </g>
+</svg>

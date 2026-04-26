@@ -13,14 +13,31 @@ recrean las pantallas principales de la app `mobile/`. Útiles para:
 
 ## Galería
 
-| Pantalla                                         | Descripción                                                  |
+### Pantalla principal y control
+
+| Archivo                                          | Descripción                                                  |
 | ------------------------------------------------ | ------------------------------------------------------------ |
-| [01-home.svg](01-home.svg)                       | Home con 3 dispositivos, control de grupo y FAB              |
+| [01-home.svg](01-home.svg)                       | Home agrupado por habitación con chips de escenas y acciones por sala |
+| [04-device-control.svg](04-device-control.svg)   | Detalle de un nodo, pestaña Control con CurtainViz, slider y panel de favoritas |
+| [05-device-schedules.svg](05-device-schedules.svg) | Pestaña "Programador" con 3 reglas semanales              |
+| [06-device-advanced.svg](06-device-advanced.svg) | Pestaña "Avanzado" con calibración + política BLE            |
+| [11-device-config-limits.svg](11-device-config-limits.svg) | Pestaña Ajustes con límites de recorrido + selector de habitación |
+
+### Onboarding y descubrimiento
+
+| Archivo                                          | Descripción                                                  |
+| ------------------------------------------------ | ------------------------------------------------------------ |
 | [02-add-bluetooth.svg](02-add-bluetooth.svg)     | "Añadir → Bluetooth" durante un escaneo activo               |
 | [03-ble-wizard-wifi.svg](03-ble-wizard-wifi.svg) | Paso 2 del wizard BLE: selección de WiFi                     |
-| [04-device-control.svg](04-device-control.svg)   | Detalle de un nodo, pestaña "Control"                        |
-| [05-device-schedules.svg](05-device-schedules.svg) | Pestaña "Programador" con 3 reglas semanales               |
-| [06-device-advanced.svg](06-device-advanced.svg) | Pestaña "Avanzado" con calibración + política BLE            |
+| [10-ble-wizard-extras.svg](10-ble-wizard-extras.svg) | Paso 3 del wizard: límites de recorrido + habitación + MQTT |
+
+### Organización (rooms y presets)
+
+| Archivo                                          | Descripción                                                  |
+| ------------------------------------------------ | ------------------------------------------------------------ |
+| [07-rooms.svg](07-rooms.svg)                     | CRUD de habitaciones con icono y conteo de dispositivos      |
+| [08-presets-list.svg](08-presets-list.svg)       | Lista de presets/escenas con chips de items                  |
+| [09-preset-editor.svg](09-preset-editor.svg)     | Editor de preset con dispositivos agrupados por habitación   |
 
 ## Ver una pantalla
 
