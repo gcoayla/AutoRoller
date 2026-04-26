@@ -28,10 +28,9 @@ resuelto el ajuste para una cadena distinta o un motor más corto.
 
 - Motor: **NEMA 17 1.2 A · 0.42 Nm** (idéntico al BOM nuestro).
 - Driver: **TMC2209** (compatible pin a pin con TMC2208).
-- Cadena: **4.5 mm bolita / 6.1 mm pitch** — la más común en estores
-  europeos, igual que el preset por defecto de nuestro `bead_wheel.scad`.
-- Trae **archivo Fusion 360 (.f3d)** editable para adaptar a otras
-  cadenas si tu pitch es distinto.
+- Cadena por defecto: **4.5 mm bolita / 6.1 mm pitch** — la más común en
+  estores europeos. Casi idéntico al preset de nuestro `bead_wheel.scad`
+  (4.5 / 6.0); en la práctica intercambiables.
 - StallGuard configurado para detectar el atasco al final del recorrido
   (el firmware nuestro lo aprovecha si conectas DIAG a GPIO 34).
 
@@ -39,9 +38,49 @@ resuelto el ajuste para una cadena distinta o un motor más corto.
 lo que pide nuestro firmware. Imprimes la carcasa y el bracket, montas la
 electrónica de AutoRoller dentro y listo.
 
-> Si tu cadena es de **6 mm** en vez de 4.5 mm, mejor usa nuestra rueda
-> `bead_wheel.scad` reexportada con `bead_d=6 pitch=9` y solo descarga la
-> carcasa de Lush (tendrás que hacer el hueco un poco mayor).
+#### 🔧 Personalizar la rueda dentada al tamaño de tu cadena
+
+El autor publica el **archivo nativo de Fusion 360 (`.f3d`)** junto a los
+STL precisamente para que ajustes el pitch y el diámetro de bolita a tu
+cadena concreta. Cita textual del autor:
+
+> *"My dimensions are about 4.5 mm for the balls with a spacing of about
+> 6.1 mm. Use the f3d file provided if your chain has different
+> dimensions."*
+
+Pasos para ajustarlo:
+
+1. **Mide tu cadena** con un calibre:
+   - Diámetro de la bolita (la mayoría caen en 4.5, 5.0 ó 6.0 mm).
+   - Pitch = distancia entre centros de dos bolitas consecutivas.
+   Apunta los dos números antes de seguir.
+2. **Descarga el archivo `.f3d`** desde la pestaña *"Files"* de Printables
+   (suele llamarse algo tipo `roller-blinds.f3d` o `bead-wheel.f3d`).
+3. **Abre Fusion 360** (gratis para uso personal con cuenta de Autodesk
+   en <https://www.autodesk.com/products/fusion-360/personal>).
+4. **File → Open → "Open from my computer"** y abre el `.f3d`.
+5. En el árbol del modelo, despliega **"Parameters"**
+   (atajo: `Modify → Change Parameters`). Verás los parámetros del autor;
+   los relevantes para la cadena son:
+   - `bead_diameter` (o nombre similar) → pon tu diámetro de bolita.
+   - `bead_pitch` (o nombre similar) → pon tu pitch.
+   - Posibles parámetros adicionales: `tooth_count`, `wheel_width`.
+6. Pulsa **OK**: el sólido se regenera con tus medidas.
+7. Sobre la rueda en el árbol → click derecho → **"Save As Mesh"** →
+   formato **STL**, refinement *High*. Te lo guarda en disco.
+8. Imprime esa STL en **PETG, 50 % de relleno, 4 perímetros**, capa 0.2 mm.
+
+> **Truco**: imprime SOLO la rueda con tus medidas y prueba a enrollar
+> tu cadena con la mano. Si patina, sube el `bead_diameter` 0.2 mm
+> (más holgura). Si la cadena no avanza, baja el pitch 0.1 mm. Es 15
+> minutos de impresión por iteración, vale la pena afinarla antes de
+> imprimir el resto.
+
+> **Alternativa sin Fusion 360**: usa nuestro
+> [`bead_wheel.scad`](bead_wheel.scad) en OpenSCAD (gratis y open
+> source). Cambia `bead_d` y `pitch` y reexporta. Encajará en la carcasa
+> de Lush si las medidas de tu cadena son cercanas a las suyas
+> (4.5 / 6.0-6.1).
 
 ---
 
