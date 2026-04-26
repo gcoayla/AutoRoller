@@ -4,6 +4,63 @@ Síntomas más comunes y cómo resolverlos. Si tu problema no está aquí, abre 
 issue en el repo con: log serie completo, foto del cableado y versión de
 firmware (`/api/status`).
 
+## La cadena patina en la rueda dentada
+
+- **Holgura excesiva**: en `3d-models/bead_wheel.scad` baja `clearance` de
+  0.25 a 0.15, reexporta y reimprime.
+- **Cadena del tipo equivocado**: si tu cadena es de 6 mm pero la rueda fue
+  exportada para 4.5 mm, las bolitas no encajan en los huecos. Mide la
+  bolita con calibre y reexporta con la `bead_d` correcta.
+- **Tapa mal cerrada**: la `chain_driver_cover.stl` mantiene la cadena
+  pegada a la rueda. Si está suelta, la cadena se sale en cuanto hay
+  tensión.
+
+## La cadena se atasca / no avanza
+
+- **`clearance` demasiado pequeño**: súbelo a 0.35 mm.
+- **Garganta entre dientes (`groove_w`) demasiado estrecha**: súbela a
+  1.8 mm para que el cordón pase entre bolitas.
+- **Cadena enrollada al revés**: la cadena debe entrar por arriba y salir
+  por abajo (o al revés), pero NO cruzar dentro de la rueda.
+
+## La cortina sube/baja al revés
+
+- En la pestaña Ajustes del nodo, activa "Invertir dirección".
+- Equivalente: `POST /api/config {"invert_direction": true}`.
+
+## La posición se desincroniza con el tiempo
+
+Pasa cuando la cadena patina ocasionalmente (bolitas gastadas, rueda con
+ajuste justo). Soluciones:
+
+- **Recalibra desde la app** cada vez que notes el desfase: pestaña
+  Avanzado → "Marcar 0 aquí" / "Marcar máx aquí" en los topes mecánicos.
+- **Define límites de seguridad** (Ajustes → Límites de recorrido) para
+  que las llamadas a `set 0` y `set 100` queden por dentro de los topes
+  reales y no fuercen la rueda.
+- **Reduce `max_speed_hz`** desde la app o `config.h`. A menos velocidad
+  la rueda agarra mejor.
+
+## El motor llega al tope y hace "click click"
+
+Es el **comportamiento normal** cuando la cadena llega al final de su
+recorrido y la rueda gira en vacío. Para que pare automáticamente al
+detectarlo, dos opciones:
+
+- **Conecta DIAG** del TMC2208 v3.0 a GPIO 34 (StallGuard). El firmware
+  detecta el atasco y para el motor.
+- **Calibra y usa límites**: si tienes calibrado y aplicas un margen
+  conservador (5 % arriba, 95 % abajo), nunca llegas al tope físico.
+
+## El módulo se cae del marco
+
+- **Pega la VHB sobre superficie limpia**: alcohol isopropílico, sin
+  polvo. Espera 1 hora antes de cargarlo.
+- **Si el marco es texturizado** (gotelé, papel pintado), la VHB no se
+  agarra: usa la variante atornillable `mounting_bracket_screw.stl`.
+- **Peso excesivo**: si has imprimido la carcasa con relleno alto y un
+  motor más grande, considera tornillos.
+
 ## El nodo no aparece en mi WiFi
 
 1. ¿Está alimentado? El LED de estado debe estar encendido.

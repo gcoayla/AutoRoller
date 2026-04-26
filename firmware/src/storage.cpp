@@ -52,8 +52,9 @@ Settings load() {
     s.accel_hz_per_s   = prefs.getUInt("accel", DEFAULT_ACCEL_HZ_PER_S);
     s.max_position     = prefs.getInt("max_pos", DEFAULT_MAX_POSITION_STEPS);
     s.current_position = prefs.getInt("cur_pos", 0);
+    s.mechanism_type   = prefs.getUChar("mech", DEFAULT_MECHANISM);
     s.calibrated       = prefs.getBool("calibrated", false);
-    s.use_endstops     = prefs.getBool("endstops", true);
+    s.use_endstops     = prefs.getBool("endstops", DEFAULT_USE_ENDSTOPS);
 
     s.limit_open       = prefs.getUChar("lim_open", 0);
     s.limit_close      = prefs.getUChar("lim_close", 100);
@@ -104,6 +105,7 @@ void save(const Settings& s) {
     prefs.putInt("cur_pos",      s.current_position);
     prefs.putBool("calibrated",  s.calibrated);
     prefs.putBool("endstops",    s.use_endstops);
+    prefs.putUChar("mech",       s.mechanism_type);
     prefs.putUChar("lim_open",   s.limit_open);
     prefs.putUChar("lim_close",  s.limit_close);
 

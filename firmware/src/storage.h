@@ -43,14 +43,17 @@ struct Settings {
 
     // Motor
     bool     invert_direction = false;
-    uint32_t max_speed_hz     = 3200;
-    uint32_t accel_hz_per_s   = 4000;
-    int32_t  max_position     = 20000;  // pasos
+    uint32_t max_speed_hz     = 2400;     // suave por defecto (chain-puller)
+    uint32_t accel_hz_per_s   = 3000;
+    int32_t  max_position     = 12000;    // pasos; el usuario calibra
     int32_t  current_position = 0;
 
-    // Calibración
+    // Mecanismo. 0 = chain_puller (no invasivo), 1 = in_tube (invasivo).
+    uint8_t  mechanism_type   = 0;
+
+    // Calibración. Sin endstops por defecto: el chain-puller no los usa.
     bool     calibrated       = false;
-    bool     use_endstops     = true;
+    bool     use_endstops     = false;
 
     // Límites de seguridad de recorrido (en % del recorrido calibrado).
     // 0% = totalmente arriba, 100% = totalmente abajo.

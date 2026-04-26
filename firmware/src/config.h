@@ -58,15 +58,39 @@
 // =============================================================================
 //  Motor
 // =============================================================================
+// Defaults pensados para mecanismo "chain puller" (rueda dentada que tira
+// de la cadena de bolitas del estor). El par necesario es bajo y la
+// velocidad puede ser conservadora porque al final del recorrido la
+// cadena tiene topes mecánicos propios.
 #define DEFAULT_STEPS_PER_REV       200
 #define DEFAULT_MICROSTEPS          16
-#define DEFAULT_MAX_SPEED_HZ        3200    // pasos/s
-#define DEFAULT_ACCEL_HZ_PER_S      4000
-#define DEFAULT_HOMING_SPEED_HZ     800
+#define DEFAULT_MAX_SPEED_HZ        2400    // pasos/s — más suave que tubo directo
+#define DEFAULT_ACCEL_HZ_PER_S      3000
+#define DEFAULT_HOMING_SPEED_HZ     600
 #define DEFAULT_INVERT_DIRECTION    false
 
-// Recorrido máximo en pasos (antes de calibrar). Se sustituye al calibrar.
-#define DEFAULT_MAX_POSITION_STEPS  20000
+// Recorrido máximo en pasos (antes de calibrar). Es solo un valor inicial:
+// el usuario debe calibrar manualmente porque cada estor tiene un largo
+// distinto de cadena. 12000 pasos a 1/16 microstepping ≈ 4 vueltas de
+// rueda, suficiente para empezar.
+#define DEFAULT_MAX_POSITION_STEPS  12000
+
+// =============================================================================
+//  Mecanismo
+// =============================================================================
+// 0 = chain_puller (DEFAULT): el motor mueve una rueda dentada externa que
+//     tira de la cadena de bolitas del estor. No invasivo. Sin endstops
+//     físicos por defecto (la cadena tiene topes mecánicos propios). Si el
+//     TMC2208 expone DIAG, se usa StallGuard como detección de tope.
+// 1 = in_tube: el motor va acoplado al tubo del estor enrollable y lo gira
+//     directamente. Invasivo. Suele querer endstops físicos.
+#define MECH_CHAIN_PULLER  0
+#define MECH_IN_TUBE       1
+#define DEFAULT_MECHANISM  MECH_CHAIN_PULLER
+
+// Por defecto, sin endstops. Se activa si pones MECH_IN_TUBE o si conectas
+// hardware de finales de carrera.
+#define DEFAULT_USE_ENDSTOPS  false
 
 // =============================================================================
 //  LED de estado (WS2812)

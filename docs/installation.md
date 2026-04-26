@@ -7,30 +7,33 @@ Guía paso a paso para montar un nodo AutoRoller desde cero. Tiempo estimado:
 
 ```
                      ┌──────────────────┐
-                     │  Fuente 12 V/2A  │
+                     │  Fuente 12 V/1A  │
                      └────────┬─────────┘
                               │ 12 V
               ┌───────────────┼───────────────┐
               │               │               │
     ┌─────────▼────────┐ ┌────▼────┐  ┌───────▼───────┐
     │  Buck 12 V → 5 V │ │ TMC2208 │  │ Porta-fusible │
-    └─────────┬────────┘ │  VMOT   │  │      2A       │
+    └─────────┬────────┘ │  VMOT   │  │     1.5 A     │
               │ 5 V      └────┬────┘  └───────┬───────┘
     ┌─────────▼────────┐      │  4 hilos      │
     │   ESP32 (VIN)    │      └─────► Motor ◄─┘
-    │                  │ 3.3V
-    │ STEP ───────────► STEP
-    │ DIR  ───────────► DIR
-    │ EN   ───────────► EN
-    │ MS1  ───────────► MS1
-    │ MS2  ───────────► MS2
-    │ GPIO34 ◄──── Endstop sup.
-    │ GPIO35 ◄──── Endstop inf.
-    │ GPIO18 ◄──── Botón ↑
-    │ GPIO19 ◄──── Botón ↓
-    │ GPIO23 ────► WS2812 LED
+    │                  │ 3.3V              │
+    │ STEP ───────────► STEP                │ eje 5 mm
+    │ DIR  ───────────► DIR             ┌───▼────┐
+    │ EN   ───────────► EN              │ Rueda  │
+    │ MS1  ───────────► MS1             │ dentada│
+    │ MS2  ───────────► MS2             └───┬────┘
+    │ GPIO34 ◄──── DIAG (StallGuard, opc.)  │
+    │ GPIO18 ◄──── Botón ↑                  │
+    │ GPIO19 ◄──── Botón ↓             cadena de
+    │ GPIO23 ────► WS2812 LED          bolitas del estor
     └──────────────────┘
 ```
+
+Sin finales de carrera externos: la cadena tiene topes mecánicos propios.
+Si tu TMC2208 v3.0 expone el pin `DIAG`, conéctalo a GPIO 34 para que el
+firmware detecte el atasco del motor al final de la cadena.
 
 ## Lista de comprobación previa
 
@@ -133,49 +136,80 @@ Detalles completos en [`docs/ble-provisioning.md`](ble-provisioning.md).
      Node-RED / asistente propio.
 5. Pulsa "Guardar". El nodo se reinicia y se conecta a tu WiFi.
 
-## Paso 5 — Calibración del recorrido
+## Paso 5 — Montaje físico (no invasivo)
 
-La primera vez hay que enseñar al nodo dónde están los topes:
+> **No tienes que tocar tu cortina.** Solo cuelgas el módulo al lado y
+> enrollas la cadena de bolitas en la rueda.
 
-### Modo automático (con finales de carrera)
+1. **Identifica el lado de la cadena**. Mira tu estor: la cadena cuelga por
+   uno de los lados (normalmente el derecho), formando un bucle continuo
+   (sube por delante y baja por detrás, o al revés). El módulo va pegado
+   al marco / pared **a la altura donde la cadena queda recta**.
+2. **Pega o atornilla el bracket**:
+   - **Con VHB** (más rápido, reversible): limpia bien el marco con alcohol
+     isopropílico, pega `mounting_bracket_vhb.stl` y haz presión 30 s.
+     **Espera 1 hora antes de cargarlo.**
+   - **Con tornillos**: usa `mounting_bracket_screw.stl` con 2 tornillos
+     M4×25 al marco.
+3. **Coloca la rueda dentada en el eje del motor** y aprieta el prisionero
+   M3 al ras del flat (si tu motor es de eje liso, primero pon el
+   `shaft_adapter` impreso).
+4. **Atornilla el motor a la carcasa principal** (`chain_driver_body.stl`)
+   con 4 tornillos M3×25 desde el patrón NEMA 17.
+5. **Coloca la electrónica** dentro de la carcasa: ESP32, driver, buck,
+   conector barril, botones y LED. Cablea según el esquema del paso 1.
+6. **Engancha la carcasa al bracket** (encaje tipo "L"). Comprueba que
+   queda firme.
+7. **Enrolla la cadena de bolitas** alrededor de la rueda dentada:
+   - Abre la `chain_driver_cover.stl`.
+   - Coloca la cadena entre las dos guías (superior e inferior) de modo
+     que las bolitas encajen en los huecos de la rueda.
+   - Cierra la tapa con los 4 tornillos M3×8.
+8. **Conecta la fuente** y verifica que enciende.
 
-1. Entra al panel web del nodo (`http://autoroller-XXX.local`).
-2. Pulsa **"Calibrar"**.
-3. El motor sube despacio hasta tocar el endstop superior → fija ese punto
-   como `posición 0`.
-4. Baja despacio hasta tocar el endstop inferior → fija ese punto como
-   `posición máxima` (en pasos).
-5. Vuelve a subir al 0. Calibración completa.
+## Paso 6 — Calibración del recorrido
 
-### Modo manual (sin finales de carrera)
+Como **no hay finales de carrera externos**, AutoRoller usa calibración
+manual o por StallGuard.
 
-1. Sube manualmente la cortina con los botones físicos hasta el tope arriba.
-2. Pulsa **"Marcar como 0"**.
-3. Baja hasta el tope abajo.
-4. Pulsa **"Marcar como máximo"**.
-5. Listo.
+### Calibración manual desde la app (recomendada)
+
+1. Abre la app móvil → tu nodo → pestaña **Control**.
+2. Pulsa **"▲ Subir"** y déjalo correr hasta que la cadena llegue al tope
+   (el motor empezará a hacer ruido de "click click" porque la cadena no
+   avanza más).
+3. Pulsa **"■ Parar"** inmediatamente.
+4. Ve a **Avanzado → Calibración → "Marcar 0 aquí"**.
+5. Repite bajando: pulsa **"▼ Bajar"** hasta que la cadena llegue al tope
+   inferior, **"■ Parar"**, y **"Marcar máximo aquí"**.
 
 La calibración se guarda en NVS y sobrevive a reinicios.
 
-## Paso 6 — Montaje físico
+### Calibración por StallGuard (opcional)
 
-1. Atornilla el `motor_bracket.stl` al marco/pared con tornillos M4.
-2. Fija el motor al soporte con M3×25.
-3. Coloca el acople (`coupler.stl`) en el eje del motor con prisionero M3.
-4. Encaja el tubo de la cortina en el acople. Aprieta hasta que no resbale.
-5. Coloca la electrónica en su carcasa, atornilla los conectores externos.
-6. Si usas finales de carrera, fíjalos con `endstop_bracket.stl` y ajusta su
-   posición a los topes mecánicos reales de la cortina.
-7. Pasa el cable del motor con su pasacables al lado del nodo.
+Si tu TMC2208 v3.0 tiene el pin DIAG conectado a GPIO 34, puedes pulsar
+**"Calibrar"** en la app y el firmware detectará automáticamente los
+topes por el atasco del motor. Es como la calibración con endstops pero
+sin necesidad de instalarlos.
+
+### Pon límites de seguridad
+
+Una vez calibrado, **define un margen** en la pestaña Ajustes → Límites
+de recorrido. Por ejemplo `tope_abierto = 5 %` y `tope_cerrado = 95 %`
+asegura que nunca llegues al tope mecánico de la cadena, lo que evita
+ruido y desgaste de la rueda.
 
 ## Paso 7 — Verificación
 
-- Sube/baja desde la interfaz web.
-- Sube/baja desde el botón físico (override manual).
-- Suscríbete al topic MQTT `autoroller/<name>/state` y verifica que publica
-  cambios.
-- Apaga el nodo a mitad de recorrido y vuelve a encender: la posición debe
-  conservarse.
+- Sube/baja desde la interfaz web y desde la app.
+- Pulsa los botones físicos (override manual).
+- **Tira manualmente de la cadena** con la mano: tiene que moverse
+  libremente (la rueda dentada NO debe trabarla). Si traba, ajusta la
+  tapa o reduce `clearance` en la rueda y reimprime.
+- Suscríbete al topic MQTT `autoroller/<name>/state` y verifica que
+  publica cambios.
+- Apaga el nodo a mitad de recorrido y vuelve a encender: la posición
+  debe conservarse.
 
 Si todo va bien, **ya puedes integrarlo con tu asistente o automatizaciones**
 (ver [`docs/api.md`](api.md) y [`docs/voice-assistant.md`](voice-assistant.md)).

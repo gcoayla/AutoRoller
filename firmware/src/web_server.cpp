@@ -160,6 +160,7 @@ static void handleConfigGet(AsyncWebServerRequest* req) {
     doc["max_speed_hz"]     = s_settings->max_speed_hz;
     doc["accel_hz_per_s"]   = s_settings->accel_hz_per_s;
     doc["use_endstops"]     = s_settings->use_endstops;
+    doc["mechanism_type"]   = s_settings->mechanism_type;
     doc["limit_open"]       = s_settings->limit_open;
     doc["limit_close"]      = s_settings->limit_close;
     doc["ble_enabled"]      = s_settings->ble_enabled;
@@ -336,6 +337,7 @@ static void handleConfigPost(AsyncWebServerRequest* req, JsonVariant& body) {
     if (obj["max_speed_hz"].is<int>())              s_settings->max_speed_hz    = std::min(50000, std::max(100, obj["max_speed_hz"].as<int>()));
     if (obj["accel_hz_per_s"].is<int>())            s_settings->accel_hz_per_s  = std::min(100000, std::max(100, obj["accel_hz_per_s"].as<int>()));
     if (obj["use_endstops"].is<bool>())             s_settings->use_endstops    = obj["use_endstops"].as<bool>();
+    if (obj["mechanism_type"].is<int>())            s_settings->mechanism_type  = (uint8_t)std::min(1, std::max(0, obj["mechanism_type"].as<int>()));
     if (obj["limit_open"].is<int>())                s_settings->limit_open      = std::min(100, std::max(0, obj["limit_open"].as<int>()));
     if (obj["limit_close"].is<int>())               s_settings->limit_close     = std::min(100, std::max(0, obj["limit_close"].as<int>()));
     if (s_settings->limit_open >= s_settings->limit_close) {

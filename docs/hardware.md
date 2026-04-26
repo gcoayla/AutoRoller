@@ -1,150 +1,160 @@
 # Selección de hardware
 
-Esta es la lista de componentes recomendados para un nodo AutoRoller capaz de
-mover una cortina enrollable o de riel ligero. Está pensada para ser barata,
-fácil de encontrar y robusta.
+Esta es la lista de componentes para un nodo AutoRoller que mueva una cortina
+mediante **tirador de cadena de bolitas** (mecanismo no invasivo).
+El motor cuelga al lado de tu cortina, una rueda dentada agarra la cadena, y
+al girar el motor sube/baja la cortina como si tirases tú de la cadena.
+
+> Es el mismo principio que el **SwitchBot Curtain 3**, **Aqara Roller Shade
+> Driver E1** o **Soma Smart Shades** comerciales. Aquí lo hacemos abierto y
+> casero.
 
 ## Resumen ejecutivo
 
 | Función                | Recomendado                             | Alternativas                        |
 | ---------------------- | --------------------------------------- | ----------------------------------- |
-| Microcontrolador       | **ESP32-WROOM-32 DevKit v1 (30 pines)** | ESP32-S3, ESP32-C3, Raspberry Pi Pico W |
-| Motor                  | **NEMA 17 (1.5 A, 40 Ncm)**             | 28BYJ-48 (cortinas muy ligeras), motor DC con encoder |
-| Driver                 | **TMC2208 (modo STEP/DIR)**             | A4988, DRV8825                      |
-| Fuente                 | **12 V / 2 A barril 5.5 mm**            | 24 V si el motor lo soporta         |
-| Conversor lógica       | **Buck Mini-360 12 V→5 V**              | Regulador AMS1117 si la corriente es baja |
-| Final de carrera       | **Microswitch KW11-3Z (x2)**            | Sensor hall + imán, óptico          |
-| Botón manual           | Pulsador 12 mm con anillo               | Cualquier pulsador NA               |
-| LED de estado          | **LED RGB WS2812 (NeoPixel)**           | Tres LEDs discretos                 |
-| Cableado               | Dupont + cable AWG18 para potencia      | —                                   |
-| Caja                   | Imprimida (ver `docs/3d-printing.md`)   | —                                   |
+| Microcontrolador       | **ESP32-WROOM-32 DevKit v1 (30 pines)** | ESP32-S3, ESP32-C3 SuperMini        |
+| Motor                  | **NEMA 17 corto (1.0 A · 23-34 mm)**    | 28BYJ-48 con reductora interna      |
+| Driver                 | **TMC2208 silencioso**                  | A4988 (ruidoso), ULN2003 (28BYJ-48) |
+| Fuente                 | **12 V / 1 A barril 5.5 mm**            | 5 V/2A si motor 28BYJ-48            |
+| Conversor lógica       | Buck Mini-360                           | AMS1117                             |
+| Sujeción al marco      | **Adhesivo 3M VHB** + ganchos imprimibles | Tornillería al marco              |
+| Botón manual           | Pulsador 12 mm                          | —                                   |
+| LED de estado          | LED WS2812 (NeoPixel) ó 3 mm difuso     | —                                   |
+| Cableado               | Dupont para señal, AWG18 para potencia  | —                                   |
 
-> **Coste aproximado por nodo**: 15-25 € si compras en lotes (motor + driver +
-> ESP32 + fuente). El ESP32 cuesta unos 5-7 €, el motor 8-12 €, el driver
-> 2-4 €, y la fuente 5-8 €.
+> **Coste aproximado por nodo**: 12-20 €. Es **más barato** que la opción
+> intra-tubo porque el motor es más pequeño (la cadena exige mucho menos par
+> que rotar el tubo entero).
 
-## Por qué ESP32 (y no otra placa)
+## Por qué este mecanismo es mejor para empezar
 
-- **WiFi 2.4 GHz integrada**, antena suficiente para cobertura doméstica.
-- **Bluetooth** (lo dejamos para futuro: configuración inicial sin WiFi).
-- **Doble núcleo a 240 MHz**: un núcleo gestiona el motor, el otro la red.
-- **Periféricos sobrados**: 30+ GPIO, RMT (perfecto para generar pulsos STEP
-  sin saturar la CPU), I²C, SPI, UART, ADC, PWM por hardware (LEDC).
-- **Soporte excelente** en Arduino-ESP32 y ESP-IDF, librerías maduras
-  (AccelStepper, FastAccelStepper, AsyncWebServer, PubSubClient, ArduinoOTA).
-- **Almacenamiento NVS** y **LittleFS** para preferencias y archivos web.
-- **Precio**: 5-7 € en una DevKit estándar.
+- **No invasivo**: no desmontas nada de tu cortina. Si te mudas, lo descuelgas
+  sin marcas (con adhesivo VHB sobre paredes lisas).
+- **Universal**: cualquier estor con cadena de bolitas (la mayoría de los
+  modernos en España) funciona, sin importar la marca.
+- **Reversible**: puedes seguir tirando de la cadena con la mano cuando
+  quieras. La rueda dentada no traba el movimiento manual.
+- **Par sobrado**: la cadena necesita típicamente 5-15 N de tracción. Un NEMA
+  17 corto entrega 30-40 Ncm, equivalente a >50 N en una rueda de 15 mm de
+  radio. Sobra ×3-5.
 
-Las alternativas (ESP8266, Pi Pico W) funcionarían pero pierden bien margen de
-GPIO, bien velocidad para mover el motor sin glitches, bien madurez de
-ecosistema.
+## Las dos cadenas estándar
 
-### Variantes válidas del ESP32
+Antes de comprar, mira la cadena de tu estor con un calibre o regla:
 
-- **ESP32-WROOM-32 DevKit v1 (30 pines)**: la más común, recomendada.
-- **ESP32-S3 DevKit**: USB nativo (más cómodo flasheo y depuración) y más RAM,
-  buena opción si prevés sumar pantalla o más sensores.
-- **ESP32-C3 SuperMini**: pequeñísimo, 1 núcleo, suficiente para 1 motor y muy
-  cómodo para integrar en la caja.
+| Tipo                | Bolita | Pitch (entre centros) | Predominio                              |
+| ------------------- | ------ | --------------------- | --------------------------------------- |
+| **Cadena #10**      | 4.5 mm | 6 mm                  | El más común en estores europeos modernos |
+| **Cadena #6**       | 6 mm   | 9 mm                  | Estores comerciales / grandes            |
+| Cadena fina         | 3 mm   | 4 mm                  | Microestores                             |
 
-El firmware está escrito de forma genérica y compila para los tres con cambios
-mínimos en `firmware/platformio.ini` (selecciona el `env` correspondiente).
+> En el repo viene un modelo 3D de rueda dentada para 4.5 mm y otro para 6 mm.
+> Si tienes la rara cadena de 3 mm, modifica el OpenSCAD y reexporta.
 
-## Por qué un NEMA 17 con TMC2208
+## Sobre el motor
 
-### Motor: NEMA 17
+### Por qué NEMA 17 (y por qué corto)
 
-- **Par sobrado** (40-50 Ncm) para cortinas enrollables hasta ~3 kg de tela.
-- **Bipolar 4 hilos**, control estándar y bien documentado.
-- Existe en formato 23 mm, 34 mm y 40 mm de largo: con el de 34 mm sobra para
-  cortinas ligeras.
-- Compatible con un sinfín de soportes y poleas GT2 imprimibles.
+- **Par sobrado** para la cadena (30-40 Ncm). Mucho más del necesario.
+- **Bipolar 4 hilos**, el driver TMC2208 lo gobierna con STEP/DIR.
+- Lo elegimos **corto (23 mm o 34 mm)** porque la carcasa que lo aloja queda
+  más pequeña y discreta. No necesitas las versiones de 40-60 mm.
+- Eje 5 mm estándar — el agujero central de la rueda dentada está hecho a
+  esa medida.
 
-> Para cortinas **muy ligeras** o cortinas-velo, un **28BYJ-48** con
-> ULN2003 es suficiente y consume mucho menos. Pero su par no llega a una
-> cortina enrollable normal y su precisión es menor.
+### Alternativa más compacta: 28BYJ-48
 
-### Driver: TMC2208 (frente al A4988/DRV8825)
+- **Reductora interna 64:1** de fábrica → ya viene con par alto y velocidad
+  baja.
+- Funciona con driver **ULN2003** (placa que viene casi siempre con el
+  motor) y a 5 V.
+- **Más barato** (~3 € motor+driver) y más pequeño que el NEMA 17.
+- **Contras**: no soporta StallGuard (no detecta cuándo llega al tope), es
+  un poco más ruidoso que un TMC2208 silenciado, y el firmware actual está
+  pensado para STEP/DIR — añadir soporte 28BYJ-48 requiere adaptación.
 
-- **Silencioso**: usa StealthChop y no se oyen los pasos. Importante en un
-  dormitorio o salón.
-- **Microstepping 1/16 ó 1/256** según versión, para movimiento suave.
-- **Protecciones**: térmica, de corriente, de cortocircuito.
-- **Compatible pin a pin** con el A4988, así que cualquier guía sirve.
-- Trabaja a 3.3 V de lógica → conexión directa con el ESP32 sin level shifter.
+> Para la primera versión, **vamos con NEMA 17 + TMC2208** porque es el
+> camino más estable con el firmware actual.
 
-### Fuente: 12 V / 2 A
+### Driver: TMC2208 (frente al A4988)
 
-- El TMC2208 acepta 5.5-36 V; con 12 V el motor da par cómodamente sin
-  calentarse.
-- 2 A son holgados para un solo motor a media corriente (~0.7-1.2 A).
-- Conector barril 5.5/2.1 mm estándar para cambiarla con facilidad.
+- **Silencioso**: usa StealthChop, no se oyen los pasos. Importante en un
+  dormitorio.
+- **StallGuard** (opcional, en variantes v3.0 con pin DIAG accesible): puede
+  detectar cuando el motor se atasca contra el tope físico de la cadena,
+  sin necesidad de finales de carrera. Lo aprovecharemos como detección de
+  "tope alcanzado".
+- **Compatible pin a pin con A4988**, así que cualquier guía vale.
+- 3.3 V de lógica → conexión directa al ESP32.
 
-> Si tienes varios nodos cerca, considera una fuente de 12 V / 5-10 A en el
-> armario y distribuir 12 V por la pared. Para empezar, una fuente por nodo
-> sobra.
+### Fuente
+
+- **12 V / 1 A** es suficiente para mover la cadena con holgura.
+- Si te molestan los 12 V, puedes ir a **5 V / 2 A** y configurar el
+  TMC2208 para baja corriente, pero pierdes margen.
 
 ## Pinout recomendado (ESP32-WROOM-32 DevKit v1)
 
-Estos son los pines que usa el firmware por defecto. Se pueden cambiar en
-`firmware/src/config.h`.
+| Función                    | Pin ESP32 | Notas                                              |
+| -------------------------- | --------- | -------------------------------------------------- |
+| STEP                       | GPIO 26   |                                                    |
+| DIR                        | GPIO 27   |                                                    |
+| ENABLE                     | GPIO 14   | Activo en bajo                                     |
+| Microstep MS1              | GPIO 25   |                                                    |
+| Microstep MS2              | GPIO 33   |                                                    |
+| StallGuard DIAG (opcional) | GPIO 34   | Detección de tope sin endstop físico               |
+| Botón manual subir         | GPIO 18   | `INPUT_PULLUP`                                     |
+| Botón manual bajar         | GPIO 19   |                                                    |
+| LED estado WS2812          | GPIO 23   |                                                    |
+| I²C SDA (futuro sensor)    | GPIO 21   |                                                    |
+| I²C SCL                    | GPIO 22   |                                                    |
 
-| Función                  | Pin ESP32 | Notas                                              |
-| ------------------------ | --------- | -------------------------------------------------- |
-| STEP                     | GPIO 26   | Generado por RMT/LEDC, no usar pines strapping     |
-| DIR                      | GPIO 27   |                                                    |
-| ENABLE (driver `EN`)     | GPIO 14   | Activo en bajo                                     |
-| Microstep MS1 (opcional) | GPIO 25   | Para fijar microstepping por hardware              |
-| Microstep MS2 (opcional) | GPIO 33   |                                                    |
-| Final de carrera arriba  | GPIO 34   | Solo entrada, con pull-up externo o usar GPIO 35   |
-| Final de carrera abajo   | GPIO 35   | Solo entrada                                       |
-| Botón manual subir       | GPIO 18   | Con `INPUT_PULLUP`                                 |
-| Botón manual bajar       | GPIO 19   |                                                    |
-| LED estado WS2812        | GPIO 23   | Cambiar por GPIO 8 o similar en ESP32-C3           |
-| I²C SDA (futuro sensor)  | GPIO 21   | Para sensor de luz BH1750 o de temperatura SHT31   |
-| I²C SCL                  | GPIO 22   |                                                    |
-
-> Pines a evitar como salidas: **GPIO 6-11** (flash interna), **GPIO 0**
-> (boot), **GPIO 2/12/15** (strapping). El firmware ya los esquiva.
+> Sin **finales de carrera externos**. Los topes son los propios de la
+> cadena del estor (cuando el motor llega al final, no puede seguir
+> tirando). Si tu TMC2208 v3.0 expone DIAG, conéctalo a GPIO 34 para
+> detección de stall por hardware.
 
 ## Lista de la compra (BOM)
 
-Para 1 cortina:
+Para 1 cortina (~15 €):
 
 - 1× ESP32-WROOM-32 DevKit v1 (30 pines)
-- 1× Motor NEMA 17, 1.5 A, 34-40 mm
+- 1× Motor NEMA 17 corto, 1.0 A, **23-34 mm de largo**
 - 1× Driver TMC2208 v3.0 con disipador
-- 1× Fuente 12 V / 2 A con conector barril
-- 1× Conversor buck Mini-360 (regulado a 5 V)
-- 2× Microswitch KW11-3Z con palanca
+- 1× Fuente 12 V / 1 A con conector barril 5.5/2.1 mm
+- 1× Conversor buck Mini-360
 - 1× Pulsador momentáneo 12 mm (subir)
 - 1× Pulsador momentáneo 12 mm (bajar)
-- 1× LED WS2812 (o un anillo de 8 si quieres animaciones)
+- 1× LED WS2812
 - 1× Tira de pines hembra Dupont 2.54 mm
-- Cable AWG18 (potencia) y AWG24 (señal)
-- Tornillería M3 (15-20 tornillos de 8-12 mm)
-- Rodamientos 608ZZ (2-4) si imprimes una transmisión por correa GT2
-- Correa GT2 (1-2 m) y polea GT2 20 dientes 5 mm
+- Cable AWG18 para el motor, AWG24 para señal
+- Tornillería M3 (~10 tornillos de 8-12 mm)
+- Insertos roscados M3 con calor (4 unidades) — opcional, recomendado
 
-Para escalar a más cortinas, basta repetir el bloque ESP32+driver+motor; la
-fuente se puede compartir si hay más de una en la misma habitación.
+**Y específico del montaje en cadena**:
+
+- **Adhesivo 3M VHB doble cara 4 cm × 10 cm** (o tornillería al marco)
+- 1× Carcasa principal impresa (`chain_driver_body.stl` + `cover.stl`)
+- 1× Rueda dentada impresa para tu tipo de cadena (4.5 mm o 6 mm)
+- 1× Bracket de fijación impreso
 
 ## Selección rápida según el tipo de cortina
 
-| Tipo de cortina             | Motor        | Driver   | Notas                                  |
-| --------------------------- | ------------ | -------- | -------------------------------------- |
-| Estor enrollable (≤ 1.5 kg) | NEMA 17 34 mm| TMC2208  | Lo más común                           |
-| Estor enrollable (≤ 3 kg)   | NEMA 17 40 mm| TMC2208  | Subir corriente Vref a ~1.0 V          |
-| Cortina velo riel ligero    | 28BYJ-48     | ULN2003  | Imprimir polea pequeña                 |
-| Cortina pesada / blackout   | NEMA 23 + reductora | DM542 (externo) | Fuera del alcance de este repo, requiere driver mayor |
-| Persiana de cinta           | NEMA 17 + reductora 5:1 | TMC2208 | Imprimir adaptador a tambor de cinta |
+| Tipo de cortina (cadena de bolitas)        | Motor          | Driver  | Notas                               |
+| ------------------------------------------ | -------------- | ------- | ----------------------------------- |
+| Estor enrollable ligero (≤ 2 kg)           | NEMA 17 23 mm  | TMC2208 | Lo más común                        |
+| Estor más pesado (≤ 4 kg) o blackout       | NEMA 17 34 mm  | TMC2208 | Subir Vref a ~0.9 V                 |
+| Persiana veneciana con cadena              | NEMA 17 23 mm  | TMC2208 | La cadena es más fina, ojo al pitch |
+| Persiana vertical con cadena de mando      | NEMA 17 23 mm  | TMC2208 | Igual                               |
+| Estor sin cadena (muelle, recogida directa)| Hacer la opción intra-tubo invasiva — fuera del alcance de este flujo |
 
 ## Seguridad eléctrica
 
-- Usa siempre fuente con **certificación CE/UL** y conector aislado.
-- No conectes ni desconectes el motor del driver con la fuente encendida (se
+- Fuente con **certificación CE/UL** y conector aislado.
+- No conectes/desconectes el motor del driver con la fuente encendida (se
   puede destruir el driver).
-- Añade un **fusible de 2 A en la línea de 12 V** (caja imprimible incluye
-  hueco para porta-fusible 5×20 mm).
-- Si manejas 220 V para alimentar la fuente, hazlo en una caja certificada,
-  nunca en la misma carcasa imprimible.
+- **Fusible de 1.5 A en la línea de 12 V** (el porta-fusible cabe dentro de
+  la carcasa imprimible).
+- Si manejas 220 V, hazlo en una caja certificada, nunca en la carcasa
+  imprimible.

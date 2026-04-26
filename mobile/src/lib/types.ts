@@ -85,6 +85,8 @@ export type DeviceConfig = {
     max_speed_hz?: number;
     accel_hz_per_s?: number;
     use_endstops?: boolean;
+    /** 0 = chain_puller (no invasivo), 1 = in_tube (invasivo) */
+    mechanism_type?: number;
     ble_enabled?: boolean;
     ble_policy?: number;
     ble_passkey?: number;

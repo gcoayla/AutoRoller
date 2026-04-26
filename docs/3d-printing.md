@@ -1,135 +1,190 @@
 # Piezas a imprimir en 3D
 
-Este documento describe **qué** imprimir, con **qué parámetros** y **por qué**.
-Los modelos `.stl` y `.step` están descritos a nivel funcional para que puedas
-fabricarlos con cualquier programa CAD (FreeCAD, Fusion 360, OnShape) o tirar
-de modelos abiertos de Printables / Thingiverse cuando exista una solución
-estándar.
+AutoRoller usa el **mecanismo de tirador de cadena de bolitas**: un módulo
+que cuelga al lado de tu cortina, contiene un motor + rueda dentada, y al
+girar tira de la cadena del estor para subirlo o bajarlo. **No desmontas
+nada de tu cortina.**
 
-> **Filosofía**: cada pieza tiene un boceto y unas medidas; no hace falta
-> reinventar la rueda. Donde existe un diseño abierto consolidado, lo
-> referenciamos.
+Este documento describe **qué imprimir**, **con qué parámetros** y **cómo
+encajan las piezas**. Los archivos `.stl` y `.scad` (paramétricos) van en
+[`3d-models/`](../3d-models/README.md).
+
+> **Filosofía**: para todo lo que existe como diseño abierto consolidado en
+> Printables / Thingiverse, lo enlazamos en lugar de reinventar. Lo único
+> realmente custom es la rueda dentada de cadena (que va parametrizada en
+> OpenSCAD para poder cambiar pitch y dientes con dos variables).
+
+## Vista general del montaje
+
+```
+       ┌────────────────────────┐
+       │  Bracket de fijación   │ ←── adhesivo VHB / tornillos al marco
+       │   (mounting_bracket)   │
+       └─────────┬──────────────┘
+                 │ enganche tipo "L"
+       ┌─────────┴──────────────┐
+       │   Carcasa principal    │ ←── chain_driver_body
+       │  ┌──────────────────┐  │
+       │  │  ESP32 + driver  │  │
+       │  │  + buck + boton  │  │
+       │  └──────────────────┘  │
+       │  ┌──────────────────┐  │
+       │  │   NEMA 17 corto  │  │
+       │  └────────┬─────────┘  │
+       │           │ eje 5 mm   │
+       │     ┌─────┴─────┐      │
+       │     │ Rueda     │      │ ←── bead_wheel_4.5mm  (o _6mm)
+       │     │ dentada   │      │
+       │     └─────┬─────┘      │
+       │           │            │
+       │   ┌───────┴───────┐    │
+       │   │  guía de      │    │ ←── chain_driver_cover
+       │   │  cadena       │    │
+       │   └───────────────┘    │
+       └─────────┬──────────────┘
+                 │
+              cadena de bolitas del estor
+              (en bucle, cuelga del techo y vuelve)
+                 │
+                 ▼
+```
 
 ## Material y parámetros recomendados
 
-- **Material**: PETG (resiste mejor el calor cerca de una ventana en verano).
+- **Material**: PETG (resiste mejor el calor cerca de la ventana en verano).
   PLA sirve si la ventana no recibe sol directo intenso.
 - **Altura de capa**: 0.2 mm.
-- **Perímetros**: 4 (las piezas mecánicas necesitan rigidez).
-- **Relleno**: 30 % giroide.
-- **Temperatura**: la de tu rollo (PETG ~235 °C / cama 80 °C).
+- **Perímetros**: 4.
+- **Relleno**: 30 % giroide. La rueda dentada al 50 %.
 - **Soporte**: solo en piezas marcadas con [SOPORTE].
 
 ## Lista de piezas
 
-### 1. Carcasa de la electrónica (`enclosure_top.stl` + `enclosure_bottom.stl`)
+### 1. Carcasa principal (`chain_driver_body.stl`)
 
-Caja en dos mitades para alojar:
+Aloja todo: motor, electrónica, rueda dentada y guías de la cadena. Tiene
+una abertura por delante por donde entra la cadena de bolitas.
 
-- ESP32-WROOM-32 DevKit v1 (30 pines, 56 × 28 mm).
-- Driver TMC2208 sobre placa puente o protoboard.
-- Buck Mini-360.
-- Conector barril 5.5/2.1 mm para la fuente.
-- Conector tipo XT30 o JST-XH para el motor.
-- Hueco para 2 botones de 12 mm en la tapa.
-- Ranura lateral para el LED WS2812.
-- Espacio para porta-fusible 5×20 mm.
+- Medidas exteriores aproximadas: **75 × 50 × 80 mm** (alto × ancho × fondo).
+- Compartimento superior para ESP32 DevKit (60 × 30 × 15 mm).
+- Hueco para el motor NEMA 17 (42 × 42 × 23 mm) en la parte inferior, con
+  los 4 agujeros M3 del patrón estándar.
+- Hueco para el driver TMC2208 sobre placa puente.
+- Espacio para Buck Mini-360 (junto al ESP32).
+- Conector barril 5.5/2.1 mm en el lateral.
+- Hueco de 12 mm para los dos botones físicos en la parte superior.
+- Ranura para el LED WS2812.
+- Slot frontal abierto: ~25 mm de altura para que pase la cadena entrante y
+  saliente, dejando espacio para la rueda.
+- Insertos roscados M3 con calor en 4 esquinas (para la tapa).
 
-Medidas exteriores: **90 × 65 × 30 mm**, esquinas redondeadas r=3 mm.
+[SOPORTE] sí — el slot interior donde se aloja la rueda crea voladizos.
 
-Detalles:
+### 2. Tapa frontal (`chain_driver_cover.stl`)
 
-- Insertos roscados M3 con calor (4 esquinas) → tornillería M3×8.
-- Rejilla de ventilación en la cara lateral del driver.
-- Pasacables con goma o gomilla para la salida de cables del motor.
+Cierra el frente, mantiene la cadena en la rueda y guía la entrada/salida.
 
-[SOPORTE] solo si haces voladizo en la rejilla de ventilación (>45°).
+- Atornilla a la carcasa principal con 4 tornillos M3×8.
+- Lleva integradas dos **guías de cadena** (una arriba, otra abajo): unos
+  carriles que evitan que la cadena se salga de la rueda dentada cuando se
+  tensa.
+- Ventana frontal (rectangular o redonda) para que se vea el LED de estado.
 
-### 2. Soporte del motor (`motor_bracket.stl`)
+### 3. Rueda dentada de cadena (`bead_wheel_*.scad`)
 
-Brida en L para fijar el motor NEMA 17 a la pared / marco de la ventana.
+La pieza **clave** del mecanismo. Va al eje del motor con un prisionero M3.
 
-- Patrón de tornillos NEMA 17 (31 mm cuadrado, agujero central de 22 mm).
-- Cuatro agujeros de fijación a pared en la base, M4.
-- Refuerzo triangular para evitar flexión bajo carga.
-- Altura ajustable mediante ranuras (slots) de 12 mm.
+Versiones recomendadas:
 
-Existen modelos abiertos consolidados:
+| Archivo                 | Bolita | Pitch | Dientes | Ø pitch |
+| ----------------------- | ------ | ----- | ------- | ------- |
+| `bead_wheel_4.5mm.scad` | 4.5 mm | 6 mm  | 12      | ~22.9 mm |
+| `bead_wheel_6mm.scad`   | 6 mm   | 9 mm  | 12      | ~34.4 mm |
 
-- [Universal NEMA 17 mount (Printables)](https://www.printables.com/) — busca
-  "NEMA 17 wall mount" si no quieres modelarlo.
+Cada diente es un hueco semi-cilíndrico (ø un poco mayor que la bolita) con
+una garganta entre dientes para que el cordón pase. La rueda imprime con la
+cara plana hacia arriba.
 
-### 3. Acople / coupler eje-tubo (`coupler_5mm_to_25mm.stl`)
+> Imprime la rueda en **PETG con 50 % de relleno** y al menos 4 perímetros
+> en las paredes radiales. Es la pieza que más sufre.
 
-Adapta el eje del motor (5 mm) al tubo de la cortina enrollable (∅ típico
-25, 28 o 32 mm). Fabrica una versión por diámetro.
+OpenSCAD parametrizado: ver [`3d-models/bead_wheel.scad`](../3d-models/README.md).
 
-- Mitad superior con eje de 5 mm + prisionero M3.
-- Mitad inferior con cilindro hueco a la medida del tubo, con dientes
-  longitudinales para morder por dentro.
-- Ambas mitades unidas con dos tornillos M3.
+### 4. Bracket de fijación (`mounting_bracket.stl`)
 
-> **Tip**: imprime en **PETG con 50 % de relleno**. El acople es la pieza que
-> más sufre.
+Pieza que va pegada / atornillada al marco de la ventana. La carcasa
+principal se desliza encima como un riel "tipo L" y queda enganchada por
+gravedad y un pestillo.
 
-### 4. Polea / engranaje opcional (`gt2_pulley_holder.stl`)
+Dos variantes recomendadas:
 
-Si en lugar de acoplar directo prefieres correa GT2:
+- **`mounting_bracket_vhb.stl`** — base plana de 60 × 40 mm pensada para
+  pegar con cinta 3M VHB de 4 cm. Ideal en marcos pintados o lisos.
+- **`mounting_bracket_screw.stl`** — base con 2 agujeros para tornillos
+  Ø3-4 mm. Para fijación definitiva.
 
-- Polea GT2 20 dientes 5 mm en el motor (se compra, no se imprime).
-- **Tambor GT2 imprimible** del lado del tubo, ∅ a medida.
-- Tensor con rodamiento 608ZZ.
+El bracket lleva el "macho" del enganche; la carcasa lleva la "hembra".
+Esto te permite descolgar el módulo en cualquier momento sin desmontar
+el bracket (ej. para reflashear o reutilizar en otra ventana).
 
-### 5. Soporte para finales de carrera (`endstop_bracket.stl`)
+### 5. Adaptador de eje opcional (`shaft_adapter_d_to_5mm.stl`)
 
-Pieza pequeña que sujeta dos microswitches KW11-3Z con tornillería M2.5,
-alineados con los topes mecánicos de la cortina.
+Si tu NEMA 17 tiene **eje "D-cut"** (con plano), imprime este adaptador
+para que la rueda no resbale. Cilindro corto con sección "D" interior y
+exterior cilíndrica de 5 mm sólida que entra en la rueda.
 
-- Slots en lugar de agujeros para ajustar la posición a posteriori.
-- Ranuras para pasar y guiar el cable.
+### 6. Pasacables y clips (`cable_clip.stl`, `cable_channel.stl`)
 
-### 6. Pasacables / canaleta (`cable_clip.stl`, `cable_channel.stl`)
+Opcional, para guiar el cable de alimentación pegado al marco.
 
-Clips presionables para sujetar el cable a lo largo del marco. No
-imprescindible, pero hace que la instalación parezca limpia.
+## ¿Imprimo o descargo?
 
-### 7. Estación inalámbrica de mesa (futuro asistente de voz, opcional)
+Aquí está la matriz de decisiones, porque para algunas piezas hay diseños
+abiertos buenísimos en Printables y otras es mejor modelar tú:
 
-Carcasa de mesa para integrar en el futuro:
+| Pieza                  | Diseño abierto bueno disponible | Recomendación              |
+| ---------------------- | ------------------------------- | -------------------------- |
+| Carcasa principal      | Muchos clones SwitchBot         | Descargar y adaptar         |
+| Tapa con guía          | Igual                           | Descargar y adaptar         |
+| Rueda dentada          | Pocos para 4.5/6 mm específicos | **Usar OpenSCAD del repo** |
+| Bracket VHB / tornillo | Sí                              | Descargar                  |
+| Adaptador eje          | Sí                              | Descargar                  |
 
-- ESP32-S3 con micrófono I²S (INMP441) y altavoz pequeño.
-- Anillo de 12 NeoPixels para feedback visual.
-- Pulsador de "wake" mecánico.
-
-Se documentará a fondo en [`docs/voice-assistant.md`](voice-assistant.md).
-
-## Cálculo del par necesario para tu cortina
-
-Para no quedarte corto:
-
-```
-Par necesario (Nm) ≈ (peso de la cortina en kg) × 9.81 × (radio del tubo en m) / 2
-```
-
-Ejemplo: estor de 1.5 kg con tubo de 25 mm de diámetro (radio 0.0125 m):
-
-```
-Par ≈ 1.5 × 9.81 × 0.0125 / 2 ≈ 0.092 Nm = 9.2 Ncm
-```
-
-Un NEMA 17 estándar entrega 40-50 Ncm, así que sobra ~5×. Si vas justo (cortina
-pesada o cortina con fricción alta), añade reducción 5:1 con engranajes
-imprimibles o usa motor más largo.
+Enlaces concretos en [`3d-models/README.md`](../3d-models/README.md).
 
 ## Tornillería resumida
 
-| Tornillo  | Cantidad | Uso                                |
-| --------- | -------- | ---------------------------------- |
-| M3 × 8    | 12       | Tapa de la caja                    |
-| M3 × 12   | 4        | Acople motor-tubo                  |
-| M3 × 25   | 4        | Sujeción del NEMA 17 al soporte    |
-| M4 × 30   | 4        | Soporte motor a pared              |
-| M2.5 × 8  | 4        | Microswitches                      |
-| Insertos M3 con calor | 8 | Caja                            |
+| Tornillo  | Cantidad | Uso                                         |
+| --------- | -------- | ------------------------------------------- |
+| M3 × 8    | 4        | Tapa frontal a carcasa                      |
+| M3 × 25   | 4        | NEMA 17 a carcasa                           |
+| M3 × 6    | 1        | Prisionero rueda → eje motor                |
+| M4 × 25   | 2        | Solo para `mounting_bracket_screw`          |
+| Insertos M3 con calor | 4 | Carcasa (en las esquinas de la tapa)     |
 
-Si no tienes insertos roscados, modifica el modelo para tuerca incrustada.
+## Cinta VHB
+
+Si vas por la opción de pegar al marco, **3M VHB 4910** o equivalente. Una
+tira de 4 × 10 cm aguanta 5-6 kg en pared lisa pintada (la unidad pesa
+~250 g, así que sobra factor 20). Limpia el marco con alcohol antes de
+pegar y haz presión 30 segundos.
+
+> Si en algún momento quieres quitarla, **calienta la cinta con un secador
+> 30 s** y tira despacio paralelo a la pared. Sale sin marca.
+
+## Calibración mecánica
+
+A diferencia del montaje intra-tubo, aquí **no hay finales de carrera
+físicos**. La cadena tiene topes mecánicos propios (un nudo en cada
+extremo); cuando el motor llega al final, la rueda gira en vacío o el
+motor se atasca. Tres formas de calibrar la posición:
+
+1. **Por tiempo** (recomendado para empezar): mides cuánto tarda en subir
+   y bajar a velocidad estándar. La app calcula el % por interpolación.
+2. **Por StallGuard** (si tu TMC2208 v3.0 expone DIAG): el driver detecta
+   el atasco al llegar al tope y reporta la posición.
+3. **Manualmente** desde la app: pones la cortina arriba con el slider y
+   pulsas "Marcar 0 aquí"; idem para "Marcar máx aquí".
+
+El firmware soporta los tres modos. Por defecto está activado el manual.
+Detalles en [`docs/configuration.md`](configuration.md).

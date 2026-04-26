@@ -1,20 +1,27 @@
 # AutoRoller
 
-Sistema casero de motorización inalámbrica para cortinas y persianas, basado en
-ESP32 y motores paso a paso. Cada nodo se conecta por WiFi, expone una API REST
-y MQTT, sirve una interfaz web embebida, y se puede controlar desde el
-navegador, desde scripts o, en el futuro, desde un asistente de voz propio.
+Sistema casero de motorización inalámbrica para estores con **cadena de
+bolitas**, basado en ESP32 y motores paso a paso. El módulo cuelga al lado
+de la cortina, una rueda dentada engrana la cadena y al girar el motor sube
+o baja la cortina como si tirases tú. **No hay que desmontar nada.**
+
+Cada nodo se conecta por WiFi, expone una API REST y MQTT, sirve una
+interfaz web embebida, y se puede controlar desde el navegador, desde la app
+móvil propia, o desde scripts.
 
 El objetivo es disponer de un dispositivo:
 
-- **Barato**: ~15-25 € por punto de control.
-- **Imprimible**: todas las piezas mecánicas se fabrican con una impresora 3D
-  doméstica (FDM, PLA/PETG).
+- **No invasivo**: se cuelga con cinta 3M VHB. Si te mudas, lo descuelgas
+  sin marcas y la cortina sigue funcionando manualmente como antes.
+- **Universal**: vale para cualquier estor con cadena de bolitas (4.5 mm o
+  6 mm), sin importar la marca.
+- **Barato**: ~12-20 € por punto de control.
+- **Imprimible**: las piezas mecánicas (rueda dentada, carcasa, bracket) se
+  fabrican con una impresora 3D doméstica (FDM, PETG).
 - **Autónomo**: cada nodo se configura por sí solo (BLE GATT o portal
   cautivo WiFi) y guarda posición incluso tras un corte de luz.
-- **Abierto**: protocolo HTTP simple + MQTT estándar + BLE GATT, sin
-  servicios en la nube.
-- **Programable**: incluye programador horario interno (NTP + cron-like) sin
+- **Abierto**: HTTP + MQTT + BLE GATT, sin servicios en la nube.
+- **Programable**: programador horario interno (NTP + cron-like) sin
   necesidad de un servidor externo.
 
 ## Estructura del repositorio
@@ -48,14 +55,17 @@ El objetivo es disponer de un dispositivo:
                     ┌─────────────────────────────┐
                     │   ESP32 (nodo AutoRoller)   │
                     │                             │
-  WiFi ───HTTP────▶ │  AsyncWebServer + WS        │ ──STEP/DIR──▶ TMC2208 ──▶ Motor ──▶ Cortina
-                    │  Portal cautivo + mDNS      │
-       ──MQTT────▶  │  PubSubClient (LWT, retain) │ ◀─Endstops──
-                    │                             │
-  BLE   ──GATT────▶ │  NimBLE (provisión+control) │ ◀─Botones───
-                    │                             │
-                    │  NTP + scheduler interno    │
-                    └─────────────────────────────┘
+  WiFi ───HTTP────▶ │  AsyncWebServer + WS        │ ──STEP/DIR──▶ TMC2208 ──▶ NEMA 17
+                    │  Portal cautivo + mDNS      │                              │
+       ──MQTT────▶  │  PubSubClient (LWT, retain) │                              │ eje 5 mm
+                    │                             │                          ┌───▼───┐
+  BLE   ──GATT────▶ │  NimBLE (provisión+control) │ ◀─Botones───              │ rueda │
+                    │                             │                          │dentada│
+                    │  NTP + scheduler interno    │                          └───┬───┘
+                    │  StallGuard (opc. DIAG)     │ ◀──────── tope cadena ───────┤
+                    └─────────────────────────────┘                              │
+                                                                          cadena de
+                                                                          bolitas del estor
 ```
 
 Tres formas de hablar con el nodo:
