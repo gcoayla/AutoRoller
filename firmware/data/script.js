@@ -4,16 +4,21 @@
 (() => {
     const $ = (id) => document.getElementById(id);
 
-    const ws = new WebSocket(`ws://${location.host}/ws`);
-    let lastState = null;
-
-    // ---- helpers
+    // ---- token de auth (persistente en localStorage)
     const TOKEN_KEY = "autoroller.token";
     const getToken = () => localStorage.getItem(TOKEN_KEY) || "";
     const setToken = (t) => {
         if (t) localStorage.setItem(TOKEN_KEY, t);
         else localStorage.removeItem(TOKEN_KEY);
     };
+    const wsUrl = () => {
+        const t = getToken();
+        return `ws://${location.host}/ws${t ? `?token=${encodeURIComponent(t)}` : ""}`;
+    };
+    let ws = new WebSocket(wsUrl());
+    let lastState = null;
+
+
     const authHeaders = () => {
         const t = getToken();
         return t ? { "X-AutoRoller-Token": t } : {};
@@ -92,8 +97,13 @@
     ws.onmessage = (ev) => {
         try { renderState(JSON.parse(ev.data)); } catch {}
     };
-    ws.onclose = () => {
-        setTimeout(() => location.reload(), 2000);
+    ws.onclose = (ev) => {
+        // 1008 = policy violation (token inválido). Pedimos token y recargamos.
+        if (ev && ev.code === 1008) {
+            const t = prompt("Este nodo requiere un token de API. Introdúcelo:");
+            if (t) setToken(t);
+        }
+        setTimeout(() => location.reload(), 1500);
     };
 
     // ---- inicial

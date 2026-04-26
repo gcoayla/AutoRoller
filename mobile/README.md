@@ -26,6 +26,9 @@ casa desde el móvil:
   un botón en "Avanzado" reabre el wizard saltando directo a la pantalla
   de WiFi.
 
+> Vista previa visual del diseño en [`docs/mockups/`](../docs/mockups/README.md)
+> (SVGs a tamaño teléfono que recrean las pantallas principales).
+
 ## Stack
 
 | Capa             | Librería                                |

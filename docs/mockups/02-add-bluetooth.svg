@@ -1,0 +1,122 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 844" width="390" height="844" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif">
+    <defs>
+        <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#050811"/>
+            <stop offset="40%" stop-color="#080F22"/>
+            <stop offset="100%" stop-color="#050811"/>
+        </linearGradient>
+        <radialGradient id="halo1" cx="0.85" cy="0.05" r="0.5">
+            <stop offset="0%" stop-color="#B14EFF" stop-opacity="0.18"/>
+            <stop offset="100%" stop-color="#B14EFF" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="halo2" cx="0.05" cy="1.0" r="0.6">
+            <stop offset="0%" stop-color="#4EA1FF" stop-opacity="0.14"/>
+            <stop offset="100%" stop-color="#4EA1FF" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="primary" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#4EA1FF"/>
+            <stop offset="100%" stop-color="#7BC1FF"/>
+        </linearGradient>
+    </defs>
+
+    <rect width="390" height="844" fill="url(#bg)"/>
+    <rect width="390" height="844" fill="url(#halo1)"/>
+    <rect width="390" height="844" fill="url(#halo2)"/>
+
+    <!-- Status bar -->
+    <text x="32" y="34" fill="#E6ECF5" font-size="14" font-weight="600">9:41</text>
+    <g transform="translate(330,22)" fill="#E6ECF5">
+        <rect x="0" y="6" width="3" height="9" rx="1"/>
+        <rect x="5" y="3" width="3" height="12" rx="1"/>
+        <rect x="10" y="0" width="3" height="15" rx="1"/>
+        <rect x="20" y="2" width="14" height="11" rx="2.5" fill="none" stroke="#E6ECF5" stroke-width="1.2"/>
+        <rect x="22" y="4" width="10" height="7" rx="1"/>
+    </g>
+
+    <!-- Nav header -->
+    <g transform="translate(20,68)">
+        <text x="0" y="6" fill="#E6ECF5" font-size="22" font-weight="700">‹  Añadir dispositivo</text>
+    </g>
+
+    <!-- Tabs -->
+    <g transform="translate(20,110)">
+        <rect width="350" height="48" rx="14" fill="rgba(255,255,255,0.03)" stroke="#1E2D54"/>
+        <!-- Tab activa: Bluetooth -->
+        <rect x="4" y="4" width="171" height="40" rx="11" fill="rgba(78,161,255,0.18)"/>
+        <text x="89" y="29" text-anchor="middle" fill="#4EA1FF" font-size="13" font-weight="700">⚏ Bluetooth</text>
+        <text x="262" y="29" text-anchor="middle" fill="#7B89A6" font-size="13" font-weight="700">📶 WiFi</text>
+    </g>
+
+    <!-- Card: descripción + botón scan -->
+    <g transform="translate(20,180)">
+        <rect width="350" height="138" rx="18" fill="#16213A" stroke="#1E2D54"/>
+        <text x="20" y="32" fill="#4EA1FF" font-size="15" font-weight="700">⚏  Descubrimiento Bluetooth</text>
+        <text x="20" y="58" fill="#7B89A6" font-size="13">Asegúrate de que el nodo está alimentado y</text>
+        <text x="20" y="76" fill="#7B89A6" font-size="13">cerca. El nombre BLE empieza por</text>
+        <text x="20" y="94" fill="#E6ECF5" font-size="13" font-family="ui-monospace,monospace">AutoRoller-XXXX</text>
+
+        <!-- Botón -->
+        <rect x="20" y="106" width="310" height="20" rx="11" fill="url(#primary)"/>
+        <text x="175" y="120" text-anchor="middle" fill="#061226" font-size="13" font-weight="700">⏵ Buscando…</text>
+    </g>
+
+    <!-- Sección -->
+    <g transform="translate(20,340)">
+        <text x="0" y="14" fill="#7B89A6" font-size="10" letter-spacing="2.5" font-weight="700">TOCA PARA CONFIGURAR</text>
+        <text x="0" y="36" fill="#E6ECF5" font-size="20" font-weight="700">Dispositivos cercanos</text>
+    </g>
+
+    <!-- Resultado 1 -->
+    <g transform="translate(20,396)">
+        <rect width="350" height="76" rx="18" fill="#16213A" stroke="#1E2D54"/>
+        <text x="20" y="30" fill="#E6ECF5" font-size="15" font-weight="700">AutoRoller-a1b2</text>
+        <text x="20" y="50" fill="#7B89A6" font-size="11">D8:13:2A:F1:A1:B2</text>
+        <!-- Signal bars -->
+        <g transform="translate(245,32)">
+            <rect width="3" height="4"  rx="1.5" fill="#4EA1FF"/>
+            <rect x="5"  width="3" height="7"  rx="1.5" fill="#4EA1FF"/>
+            <rect x="10" width="3" height="10" rx="1.5" fill="#4EA1FF"/>
+            <rect x="15" width="3" height="13" rx="1.5" fill="#4EA1FF"/>
+        </g>
+        <text x="284" y="44" fill="#7B89A6" font-size="11">-48 dBm</text>
+        <text x="328" y="44" fill="#7B89A6" font-size="14">›</text>
+    </g>
+
+    <!-- Resultado 2 -->
+    <g transform="translate(20,488)">
+        <rect width="350" height="76" rx="18" fill="#16213A" stroke="#1E2D54"/>
+        <text x="20" y="30" fill="#E6ECF5" font-size="15" font-weight="700">AutoRoller-c3d4</text>
+        <text x="20" y="50" fill="#7B89A6" font-size="11">D8:13:2A:F1:C3:D4</text>
+        <g transform="translate(245,32)">
+            <rect width="3" height="4"  rx="1.5" fill="#4EA1FF"/>
+            <rect x="5"  width="3" height="7"  rx="1.5" fill="#4EA1FF"/>
+            <rect x="10" width="3" height="10" rx="1.5" fill="rgba(255,255,255,0.18)"/>
+            <rect x="15" width="3" height="13" rx="1.5" fill="rgba(255,255,255,0.18)"/>
+        </g>
+        <text x="284" y="44" fill="#7B89A6" font-size="11">-71 dBm</text>
+        <text x="328" y="44" fill="#7B89A6" font-size="14">›</text>
+    </g>
+
+    <!-- Resultado 3 -->
+    <g transform="translate(20,580)">
+        <rect width="350" height="76" rx="18" fill="#16213A" stroke="#1E2D54"/>
+        <text x="20" y="30" fill="#E6ECF5" font-size="15" font-weight="700">AutoRoller-e5f6</text>
+        <text x="20" y="50" fill="#7B89A6" font-size="11">D8:13:2A:F1:E5:F6</text>
+        <g transform="translate(245,32)">
+            <rect width="3" height="4"  rx="1.5" fill="#4EA1FF"/>
+            <rect x="5"  width="3" height="7"  rx="1.5" fill="#4EA1FF"/>
+            <rect x="10" width="3" height="10" rx="1.5" fill="#4EA1FF"/>
+            <rect x="15" width="3" height="13" rx="1.5" fill="rgba(255,255,255,0.18)"/>
+        </g>
+        <text x="284" y="44" fill="#7B89A6" font-size="11">-58 dBm</text>
+        <text x="328" y="44" fill="#7B89A6" font-size="14">›</text>
+    </g>
+
+    <!-- Toast -->
+    <g transform="translate(20,766)">
+        <rect width="350" height="46" rx="14" fill="rgba(78,161,255,0.18)" stroke="#1E2D54"/>
+        <circle cx="24" cy="23" r="9" fill="none" stroke="#4EA1FF" stroke-width="1.5"/>
+        <text x="24" y="27" text-anchor="middle" fill="#4EA1FF" font-size="11" font-weight="700">i</text>
+        <text x="42" y="28" fill="#E6ECF5" font-size="13">3 dispositivos encontrados</text>
+    </g>
+</svg>

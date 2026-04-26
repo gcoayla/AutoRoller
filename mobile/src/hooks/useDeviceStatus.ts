@@ -52,7 +52,13 @@ export function useDeviceStatus(device: SavedDevice, intervalMs = 2500) {
         const connectWS = () => {
             if (!alive) return;
             try {
-                ws = new WebSocket(`ws://${host}/ws`);
+                // RN WebSocket no permite headers fiables en Android: pasamos
+                // el token como query string (el firmware lo lee igual que de
+                // los headers).
+                const tokenQS = device.apiToken
+                    ? `?token=${encodeURIComponent(device.apiToken)}`
+                    : '';
+                ws = new WebSocket(`ws://${host}/ws${tokenQS}`);
             } catch {
                 startPolling();
                 return;

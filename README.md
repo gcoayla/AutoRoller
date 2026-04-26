@@ -40,6 +40,7 @@ El objetivo es disponer de un dispositivo:
 6. [API REST, WebSocket y MQTT](docs/api.md) — referencia completa para integrar.
 7. [Asistente de voz](docs/voice-assistant.md) — cómo encajará el asistente.
 8. [Solución de problemas](docs/troubleshooting.md) — fallos típicos.
+9. [Mockups de la app móvil](docs/mockups/README.md) — vista previa visual.
 
 ## Resumen del flujo
 

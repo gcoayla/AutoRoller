@@ -66,9 +66,32 @@ void pushState() {
 }
 
 static void onWsEvent(AsyncWebSocket* /*server*/, AsyncWebSocketClient* client,
-                      AwsEventType type, void* /*arg*/, uint8_t* /*data*/,
+                      AwsEventType type, void* arg, uint8_t* /*data*/,
                       size_t /*len*/) {
     if (type == WS_EVT_CONNECT) {
+        // Auth: si hay token configurado, exigimos que la petición de upgrade
+        // lo traiga en header o query. AsyncWebSocket pasa el AsyncWebServerRequest
+        // como `arg` durante el handshake.
+        const String& tok = s_settings->api_token;
+        if (tok.length() > 0) {
+            auto* req = static_cast<AsyncWebServerRequest*>(arg);
+            bool ok = false;
+            if (req) {
+                if (req->hasHeader("X-AutoRoller-Token") &&
+                    req->header("X-AutoRoller-Token") == tok) ok = true;
+                if (!ok && req->hasHeader("Authorization")) {
+                    String h = req->header("Authorization");
+                    if (h.startsWith("Bearer ") && h.substring(7) == tok) ok = true;
+                }
+                if (!ok && req->hasParam("token") &&
+                    req->getParam("token")->value() == tok) ok = true;
+            }
+            if (!ok) {
+                Serial.println("[WS] handshake rechazado: token inválido");
+                client->close(1008, "unauthorized");
+                return;
+            }
+        }
         client->text(stateJson());
     }
 }

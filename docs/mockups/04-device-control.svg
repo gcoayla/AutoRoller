@@ -1,0 +1,154 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 390 844" width="390" height="844" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif">
+    <defs>
+        <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#050811"/>
+            <stop offset="40%" stop-color="#080F22"/>
+            <stop offset="100%" stop-color="#050811"/>
+        </linearGradient>
+        <radialGradient id="halo1" cx="0.85" cy="0.05" r="0.5">
+            <stop offset="0%" stop-color="#B14EFF" stop-opacity="0.18"/>
+            <stop offset="100%" stop-color="#B14EFF" stop-opacity="0"/>
+        </radialGradient>
+        <radialGradient id="halo2" cx="0.05" cy="1.0" r="0.6">
+            <stop offset="0%" stop-color="#4EA1FF" stop-opacity="0.14"/>
+            <stop offset="100%" stop-color="#4EA1FF" stop-opacity="0"/>
+        </radialGradient>
+        <linearGradient id="primary" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#4EA1FF"/>
+            <stop offset="100%" stop-color="#7BC1FF"/>
+        </linearGradient>
+        <linearGradient id="window" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#1B2D4F"/>
+            <stop offset="50%" stop-color="#2C4A7C"/>
+            <stop offset="100%" stop-color="#1B2D4F"/>
+        </linearGradient>
+        <linearGradient id="curtain" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#4EA1FF" stop-opacity="0.85"/>
+            <stop offset="100%" stop-color="#4EA1FF" stop-opacity="0.55"/>
+        </linearGradient>
+    </defs>
+
+    <rect width="390" height="844" fill="url(#bg)"/>
+    <rect width="390" height="844" fill="url(#halo1)"/>
+    <rect width="390" height="844" fill="url(#halo2)"/>
+
+    <!-- Status bar -->
+    <text x="32" y="34" fill="#E6ECF5" font-size="14" font-weight="600">9:41</text>
+    <g transform="translate(330,22)" fill="#E6ECF5">
+        <rect x="0" y="6" width="3" height="9" rx="1"/>
+        <rect x="5" y="3" width="3" height="12" rx="1"/>
+        <rect x="10" y="0" width="3" height="15" rx="1"/>
+        <rect x="20" y="2" width="14" height="11" rx="2.5" fill="none" stroke="#E6ECF5" stroke-width="1.2"/>
+        <rect x="22" y="4" width="10" height="7" rx="1"/>
+    </g>
+
+    <!-- Header con device info -->
+    <g transform="translate(20,68)">
+        <text x="0" y="6" fill="#E6ECF5" font-size="20" font-weight="700">‹</text>
+        <text x="32" y="2" fill="#E6ECF5" font-size="17" font-weight="700">autoroller-salon</text>
+        <text x="32" y="22" fill="#7B89A6" font-size="12">192.168.1.42</text>
+        <!-- Estado -->
+        <g transform="translate(186,4)">
+            <rect width="78" height="22" rx="11" fill="rgba(78,161,255,0.16)"/>
+            <circle cx="14" cy="11" r="3" fill="#4EA1FF"/>
+            <text x="22" y="15" fill="#4EA1FF" font-size="10" font-weight="700">SUBIENDO</text>
+        </g>
+        <!-- Star -->
+        <text x="294" y="22" fill="#FFB04E" font-size="20">★</text>
+        <!-- Trash -->
+        <text x="328" y="22" fill="#7B89A6" font-size="20">🗑</text>
+    </g>
+
+    <!-- Tabs -->
+    <g transform="translate(20,116)">
+        <rect width="350" height="40" rx="14" fill="rgba(255,255,255,0.03)" stroke="#1E2D54"/>
+        <rect x="4" y="4" width="83" height="32" rx="11" fill="rgba(78,161,255,0.18)"/>
+        <text x="46"  y="24" text-anchor="middle" fill="#4EA1FF" font-size="11" font-weight="700">Control</text>
+        <text x="133" y="24" text-anchor="middle" fill="#7B89A6" font-size="11" font-weight="700">Programador</text>
+        <text x="220" y="24" text-anchor="middle" fill="#7B89A6" font-size="11" font-weight="700">Ajustes</text>
+        <text x="307" y="24" text-anchor="middle" fill="#7B89A6" font-size="11" font-weight="700">Avanzado</text>
+    </g>
+
+    <!-- Card: Curtain Viz -->
+    <g transform="translate(20,178)">
+        <rect width="350" height="252" rx="18" fill="#16213A" stroke="#1E2D54"/>
+        <!-- Inner viz -->
+        <rect x="20" y="20" width="310" height="212" rx="14" fill="url(#window)"/>
+
+        <!-- Marco ventana -->
+        <rect x="63" y="46" width="224" height="160" rx="4"
+              fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="1.5"/>
+        <line x1="175" y1="46" x2="175" y2="206" stroke="rgba(255,255,255,0.18)" stroke-width="1"/>
+
+        <!-- Cortina (38% bajada) -->
+        <g clip-path="inset(0 0 0 0)">
+            <rect x="20" y="20" width="310" height="80" rx="14" fill="url(#curtain)"/>
+            <!-- Listas verticales -->
+            <g stroke="rgba(0,0,0,0.18)" stroke-width="0.8">
+                <line x1="40"  y1="20" x2="40"  y2="100"/>
+                <line x1="60"  y1="20" x2="60"  y2="100"/>
+                <line x1="80"  y1="20" x2="80"  y2="100"/>
+                <line x1="100" y1="20" x2="100" y2="100"/>
+                <line x1="120" y1="20" x2="120" y2="100"/>
+                <line x1="140" y1="20" x2="140" y2="100"/>
+                <line x1="160" y1="20" x2="160" y2="100"/>
+                <line x1="180" y1="20" x2="180" y2="100"/>
+                <line x1="200" y1="20" x2="200" y2="100"/>
+                <line x1="220" y1="20" x2="220" y2="100"/>
+                <line x1="240" y1="20" x2="240" y2="100"/>
+                <line x1="260" y1="20" x2="260" y2="100"/>
+                <line x1="280" y1="20" x2="280" y2="100"/>
+                <line x1="300" y1="20" x2="300" y2="100"/>
+                <line x1="320" y1="20" x2="320" y2="100"/>
+            </g>
+            <!-- Borde inferior brillante -->
+            <rect x="20" y="97" width="310" height="3" fill="#4EA1FF"/>
+        </g>
+    </g>
+
+    <!-- Card: Slider -->
+    <g transform="translate(20,452)">
+        <rect width="350" height="118" rx="18" fill="#16213A" stroke="#1E2D54"/>
+        <text x="20" y="34" fill="#7B89A6" font-size="10" letter-spacing="2.5" font-weight="700">POSICIÓN</text>
+        <text x="328" y="38" text-anchor="end" fill="#E6ECF5" font-size="22" font-weight="700" font-family="ui-monospace, monospace">38<tspan fill="#7B89A6" font-size="14"> %</tspan></text>
+
+        <!-- Track -->
+        <rect x="20" y="62" width="310" height="6" rx="3" fill="rgba(255,255,255,0.10)"/>
+        <rect x="20" y="62" width="118" height="6" rx="3" fill="#4EA1FF"/>
+        <!-- Thumb -->
+        <circle cx="138" cy="65" r="14" fill="#4EA1FF"/>
+        <circle cx="138" cy="65" r="14" fill="none" stroke="rgba(78,161,255,0.35)" stroke-width="6"/>
+
+        <text x="20"  y="98" fill="#7B89A6" font-size="11">Arriba</text>
+        <text x="328" y="98" text-anchor="end" fill="#7B89A6" font-size="11">Abajo</text>
+    </g>
+
+    <!-- Card: Botones -->
+    <g transform="translate(20,592)">
+        <rect width="350" height="86" rx="18" fill="#16213A" stroke="#1E2D54"/>
+        <!-- Subir -->
+        <g transform="translate(20,22)">
+            <rect width="100" height="42" rx="13" fill="url(#primary)"/>
+            <text x="50" y="27" text-anchor="middle" fill="#061226" font-size="14" font-weight="700">▲ Subir</text>
+        </g>
+        <!-- Parar -->
+        <g transform="translate(125,22)">
+            <rect width="100" height="42" rx="13" fill="rgba(255,176,78,0.10)" stroke="rgba(255,176,78,0.40)"/>
+            <text x="50" y="27" text-anchor="middle" fill="#FFB04E" font-size="14" font-weight="700">■ Parar</text>
+        </g>
+        <!-- Bajar -->
+        <g transform="translate(230,22)">
+            <rect width="100" height="42" rx="13" fill="url(#primary)"/>
+            <text x="50" y="27" text-anchor="middle" fill="#061226" font-size="14" font-weight="700">▼ Bajar</text>
+        </g>
+    </g>
+
+    <!-- Toast -->
+    <g transform="translate(20,750)">
+        <rect width="350" height="44" rx="14" fill="rgba(78,255,177,0.16)" stroke="#1E2D54"/>
+        <circle cx="24" cy="22" r="10" fill="none" stroke="#4EFFB1" stroke-width="1.5"/>
+        <path d="M19 23 l3.5 3.5 L30 19" fill="none" stroke="#4EFFB1" stroke-width="1.7"
+              stroke-linecap="round" stroke-linejoin="round"/>
+        <text x="44" y="27" fill="#E6ECF5" font-size="13">Subiendo</text>
+    </g>
+</svg>
