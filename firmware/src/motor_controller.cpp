@@ -82,6 +82,20 @@ void begin(const storage::Settings& s) {
                   (int)s_calibrated);
 }
 
+void reloadFromSettings(const storage::Settings& s) {
+    s_settings.limit_open       = s.limit_open;
+    s_settings.limit_close      = s.limit_close;
+    s_settings.invert_direction = s.invert_direction;
+    s_settings.max_speed_hz     = s.max_speed_hz;
+    s_settings.accel_hz_per_s   = s.accel_hz_per_s;
+    s_settings.use_endstops     = s.use_endstops;
+    if (stepper) {
+        stepper->setSpeedInHz(s.max_speed_hz);
+        stepper->setAcceleration(s.accel_hz_per_s);
+        stepper->setDirectionPin(PIN_DIR, /*invert*/ s.invert_direction);
+    }
+}
+
 void moveToSteps(int32_t steps) {
     if (!stepper) return;
     if (steps < 0) steps = 0;
@@ -90,20 +104,32 @@ void moveToSteps(int32_t steps) {
     s_state = (steps > stepper->getCurrentPosition()) ? State::MOVING_DOWN : State::MOVING_UP;
 }
 
-void moveToPercent(uint8_t percent) {
+// Aplica los límites de seguridad. Si están bien definidos
+// (limit_open < limit_close, ambos en 0..100), clampea el valor a ese rango.
+static uint8_t clampToLimits(uint8_t percent) {
     if (percent > 100) percent = 100;
+    uint8_t lo = s_settings.limit_open;
+    uint8_t hi = s_settings.limit_close;
+    if (lo >= hi || hi > 100) { lo = 0; hi = 100; }   // inválido → sin límite
+    if (percent < lo) percent = lo;
+    if (percent > hi) percent = hi;
+    return percent;
+}
+
+void moveToPercent(uint8_t percent) {
+    percent = clampToLimits(percent);
     int32_t target = (int32_t)((int64_t)percent * s_max_position / 100);
     moveToSteps(target);
 }
 
 void jogUp() {
     if (!stepper) return;
-    moveToSteps(0);
+    moveToPercent(0);   // = limit_open tras clamp
 }
 
 void jogDown() {
     if (!stepper) return;
-    moveToSteps(s_max_position);
+    moveToPercent(100); // = limit_close tras clamp
 }
 
 void stop() {

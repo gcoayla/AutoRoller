@@ -16,6 +16,15 @@ struct ScheduleEntry {
     uint8_t target_pct = 0;       // 0..100
 };
 
+// Posición favorita guardada en el dispositivo. Hasta 6 por nodo.
+struct FavoritePreset {
+    bool    enabled    = false;
+    uint8_t target_pct = 0;       // 0..100 (se clampea con limit_open/close)
+    char    name[16]   = {0};     // 15 + nul
+};
+
+constexpr size_t FAVORITES_COUNT = 6;
+
 struct Settings {
     // Identidad
     String hostname;
@@ -43,6 +52,12 @@ struct Settings {
     bool     calibrated       = false;
     bool     use_endstops     = true;
 
+    // Límites de seguridad de recorrido (en % del recorrido calibrado).
+    // 0% = totalmente arriba, 100% = totalmente abajo.
+    // Por defecto sin restricción (0..100).
+    uint8_t  limit_open       = 0;
+    uint8_t  limit_close      = 100;
+
     // BLE
     bool     ble_enabled      = true;     // se puede apagar desde la web
     uint8_t  ble_policy       = 0;        // 0=always 1=until_wifi 2=5min 3=off
@@ -58,6 +73,9 @@ struct Settings {
 
     // Programador
     ScheduleEntry schedules[8];
+
+    // Favoritas por dispositivo
+    FavoritePreset favorites[FAVORITES_COUNT];
 };
 
 void begin();
@@ -65,6 +83,7 @@ Settings load();
 void save(const Settings& s);
 void savePosition(int32_t position);
 void saveSchedules(const Settings& s);
+void saveFavorites(const Settings& s);
 void factoryReset();
 
 }  // namespace storage

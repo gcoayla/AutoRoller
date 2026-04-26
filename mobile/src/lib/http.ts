@@ -8,6 +8,7 @@
 import type {
     DeviceConfig,
     DeviceStatus,
+    Favorite,
     Schedule,
     WifiNetwork,
 } from './types';
@@ -74,6 +75,21 @@ export const api = {
 
     deleteSchedule: (host: string, i: number, token?: string) =>
         fetchJson<{ ok: boolean }>(`${baseUrl(host)}/api/schedules?i=${i}`, token, {
+            method: 'DELETE',
+        }),
+
+    favorites: (host: string, token?: string) =>
+        fetchJson<{ favorites: Favorite[] }>(`${baseUrl(host)}/api/favorites`, token),
+
+    setFavorite: (host: string, f: Favorite, token?: string) =>
+        fetchJson<{ ok: boolean }>(`${baseUrl(host)}/api/favorites`, token, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(f),
+        }),
+
+    deleteFavorite: (host: string, i: number, token?: string) =>
+        fetchJson<{ ok: boolean }>(`${baseUrl(host)}/api/favorites?i=${i}`, token, {
             method: 'DELETE',
         }),
 

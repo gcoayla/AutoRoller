@@ -74,17 +74,26 @@ Base: `http://<hostname>.local/` o `http://<ip>/`.
 | GET    | `/api/schedules`    | Lista las 8 entradas del programador         |
 | POST   | `/api/schedules`    | Edita una entrada (body con `i, hour, ...`)  |
 | DELETE | `/api/schedules?i=N`| Borra la entrada N                           |
+| GET    | `/api/favorites`    | Lista las 6 posiciones favoritas             |
+| POST   | `/api/favorites`    | Edita una favorita (body con `i, name, target_pct, enabled`) |
+| DELETE | `/api/favorites?i=N`| Resetea la favorita N                        |
 | POST   | `/api/ble`          | `{"action":"on" \| "off"}`                   |
-| POST   | `/api/open`         | Sube totalmente (= 0 %)                      |
-| POST   | `/api/close`        | Baja totalmente (= 100 %)                    |
+| POST   | `/api/open`         | Sube totalmente (clampeado a `limit_open`)   |
+| POST   | `/api/close`        | Baja totalmente (clampeado a `limit_close`)  |
 | POST   | `/api/stop`         | Detiene el movimiento                        |
-| POST   | `/api/set?value=N`  | Mueve a porcentaje N (0..100)                |
+| POST   | `/api/set?value=N`  | Mueve a porcentaje N (0..100, clampeado)     |
 | POST   | `/api/calibrate`    | Inicia calibración con endstops              |
 | POST   | `/api/set-here?value=N` | Marca la posición actual como N pasos    |
 | POST   | `/api/forget-wifi`  | Borra credenciales WiFi y abre portal        |
 | POST   | `/api/factory-reset`| Borra toda la configuración + reinicia       |
 | POST   | `/api/reboot`       | Reinicia el dispositivo                      |
 | POST   | `/api/ota`          | Subida directa de un `.bin` (multipart)      |
+
+> **Nota sobre límites de recorrido**: en `/api/config` puedes fijar
+> `limit_open` (0..N) y `limit_close` (M..100) con `0 ≤ limit_open <
+> limit_close ≤ 100`. Cualquier acción de mover el motor (UI, MQTT,
+> programador, favoritos) clampeará al rango válido para que un cambio de
+> límite no rompa una regla existente.
 
 ### Ejemplos
 

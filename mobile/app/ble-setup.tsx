@@ -3,6 +3,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
+import Slider from '@react-native-community/slider';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 
@@ -17,6 +18,7 @@ import { BleSession } from '@/lib/ble';
 import { colors } from '@/lib/colors';
 import type { WifiNetwork } from '@/lib/types';
 import { useDevices } from '@/store/devices';
+import { useRooms } from '@/store/rooms';
 import { useUi } from '@/store/ui';
 
 type Step = 'connecting' | 'identity' | 'wifi' | 'extras' | 'done';
@@ -41,6 +43,9 @@ export default function BleSetupScreen() {
     const [mqttPass, setMqttPass] = useState('');
     const [tz, setTz]             = useState('CET-1CEST,M3.5.0/2,M10.5.0/3');
     const [resultIp, setResultIp] = useState<string | undefined>();
+    const [roomId, setRoomId]     = useState<string | undefined>(undefined);
+    const [limOpen, setLimOpen]   = useState(0);
+    const [limClose, setLimClose] = useState(100);
 
     const add    = useDevices((s) => s.add);
     const update = useDevices((s) => s.update);
@@ -152,6 +157,13 @@ export default function BleSetupScreen() {
                 server: 'pool.ntp.org',
                 timezone: tz,
             });
+            // Aplicamos límites de seguridad si el usuario los cambió.
+            if (limOpen !== 0 || limClose !== 100) {
+                await session.setMotor({
+                    limit_open: limOpen,
+                    limit_close: limClose,
+                });
+            }
             // pedimos info para conocer la IP final
             try {
                 const info: any = await session.info();
@@ -172,6 +184,7 @@ export default function BleSetupScreen() {
                 hostname,
                 ip: resultIp,
                 bleId: String(id),
+                roomId,
             });
             toast('Reconfigurado', 'ok');
             router.replace(`/device/${existing}`);
@@ -183,6 +196,7 @@ export default function BleSetupScreen() {
             hostname,
             ip: resultIp,
             bleId: String(id),
+            roomId,
             addedAt: Date.now(),
         });
         toast('Dispositivo configurado', 'ok');
@@ -295,7 +309,21 @@ export default function BleSetupScreen() {
                 {step === 'extras' && (
                     <View>
                         <Card className="mb-3">
-                            <Section title="MQTT (opcional)" subtitle="Paso 3 de 3" />
+                            <Section title="Límites de recorrido" subtitle="Paso 3 de 3 · Seguridad" />
+                            <Text className="text-muted text-sm mb-2">
+                                Define hasta dónde puede subir y bajar para no
+                                forzar la cortina. Puedes ajustarlos después.
+                            </Text>
+                            <BleLimits open={limOpen} close={limClose} onChange={(o, c) => { setLimOpen(o); setLimClose(c); }} />
+                        </Card>
+
+                        <Card className="mb-3">
+                            <Section title="Habitación" subtitle="Opcional" />
+                            <BleRoomPicker selected={roomId} onPick={setRoomId} />
+                        </Card>
+
+                        <Card className="mb-3">
+                            <Section title="MQTT" subtitle="Opcional" />
                             <Switch
                                 label="Activar MQTT"
                                 value={mqttOn}
@@ -353,6 +381,114 @@ export default function BleSetupScreen() {
                 )}
             </ScrollView>
         </Screen>
+    );
+}
+
+function BleLimits({
+    open, close, onChange,
+}: { open: number; close: number; onChange: (o: number, c: number) => void }) {
+    return (
+        <View>
+            <View className="mb-2">
+                <View className="flex-row justify-between mb-1">
+                    <Text className="text-muted text-xs uppercase tracking-widest">Tope abierto</Text>
+                    <Text className="text-fg font-mono text-sm">{open} %</Text>
+                </View>
+                <Slider
+                    style={{ width: '100%', height: 32 }}
+                    minimumValue={0}
+                    maximumValue={Math.max(0, close - 1)}
+                    step={1}
+                    value={open}
+                    minimumTrackTintColor="rgba(255,255,255,0.10)"
+                    maximumTrackTintColor={colors.primary}
+                    thumbTintColor={colors.primary}
+                    onValueChange={(v) => onChange(Math.round(v), close)}
+                />
+            </View>
+            <View>
+                <View className="flex-row justify-between mb-1">
+                    <Text className="text-muted text-xs uppercase tracking-widest">Tope cerrado</Text>
+                    <Text className="text-fg font-mono text-sm">{close} %</Text>
+                </View>
+                <Slider
+                    style={{ width: '100%', height: 32 }}
+                    minimumValue={Math.min(100, open + 1)}
+                    maximumValue={100}
+                    step={1}
+                    value={close}
+                    minimumTrackTintColor={colors.primary}
+                    maximumTrackTintColor="rgba(255,255,255,0.10)"
+                    thumbTintColor={colors.primary}
+                    onValueChange={(v) => onChange(open, Math.round(v))}
+                />
+            </View>
+        </View>
+    );
+}
+
+function BleRoomPicker({
+    selected, onPick,
+}: { selected?: string; onPick: (id: string | undefined) => void }) {
+    const rooms = useRooms((s) => s.rooms.slice().sort((a, b) => a.order - b.order));
+    if (rooms.length === 0) {
+        return (
+            <Text className="text-muted text-sm">
+                No has creado habitaciones. Puedes saltarte este paso y asignar
+                una más tarde desde Ajustes → Habitaciones.
+            </Text>
+        );
+    }
+    return (
+        <View className="flex-row flex-wrap gap-2">
+            <Pressable onPress={() => onPick(undefined)} android_ripple={{ color: 'rgba(255,255,255,0.05)' }}>
+                <View
+                    className="px-3 py-2 rounded-xl"
+                    style={{
+                        backgroundColor: selected ? 'rgba(255,255,255,0.04)' : 'rgba(78,161,255,0.18)',
+                        borderWidth: 1,
+                        borderColor: selected ? colors.border : colors.primary,
+                    }}
+                >
+                    <Text
+                        className="text-xs font-semibold"
+                        style={{ color: selected ? colors.muted : colors.primary }}
+                    >
+                        Sin habitación
+                    </Text>
+                </View>
+            </Pressable>
+            {rooms.map((r) => {
+                const sel = selected === r.id;
+                return (
+                    <Pressable key={r.id} onPress={() => onPick(r.id)} android_ripple={{ color: 'rgba(255,255,255,0.05)' }}>
+                        <View
+                            className="flex-row items-center px-3 py-2 rounded-xl"
+                            style={{
+                                backgroundColor: sel ? 'rgba(78,161,255,0.18)' : 'rgba(255,255,255,0.04)',
+                                borderWidth: 1,
+                                borderColor: sel ? colors.primary : colors.border,
+                            }}
+                        >
+                            {r.icon ? (
+                                <Ionicons
+                                    name={r.icon as any}
+                                    size={12}
+                                    color={sel ? colors.primary : colors.muted}
+                                    style={{ marginRight: 5 }}
+                                />
+                            ) : null}
+                            <Text
+                                className="text-xs font-semibold"
+                                style={{ color: sel ? colors.primary : colors.fg }}
+                            >
+                                {r.name}
+                            </Text>
+                        </View>
+                    </Pressable>
+                );
+            })}
+        </View>
     );
 }
 

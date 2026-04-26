@@ -3,6 +3,7 @@
 
 import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
+import Slider from '@react-native-community/slider';
 import { Ionicons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 
@@ -18,8 +19,9 @@ import { Switch } from '@/components/Switch';
 import { useDeviceStatus } from '@/hooks/useDeviceStatus';
 import { apiFor, hostOf } from '@/lib/device-client';
 import { colors } from '@/lib/colors';
-import type { DeviceConfig, SavedDevice, Schedule } from '@/lib/types';
+import type { DeviceConfig, Favorite, SavedDevice, Schedule } from '@/lib/types';
 import { useDevices } from '@/store/devices';
+import { useRooms } from '@/store/rooms';
 import { useUi } from '@/store/ui';
 
 type Tab = 'control' | 'sched' | 'config' | 'adv';
@@ -181,7 +183,7 @@ function ControlTab({ device, percent, tint }: { device: SavedDevice; percent: n
                 />
             </Card>
 
-            <Card>
+            <Card className="mb-3">
                 <View className="flex-row gap-2">
                     <View className="flex-1">
                         <Button label="Subir" full onPress={() => send('open')} icon={<Ionicons name="arrow-up" size={14} color="#061226" />} />
@@ -194,7 +196,185 @@ function ControlTab({ device, percent, tint }: { device: SavedDevice; percent: n
                     </View>
                 </View>
             </Card>
+
+            <FavoritesPanel device={device} currentPct={Math.round(v)} tint={tint} />
         </View>
+    );
+}
+
+// ---------------------------------------------------------------------------
+//  Panel de favoritas dentro de Control
+// ---------------------------------------------------------------------------
+function FavoritesPanel({
+    device, currentPct, tint,
+}: { device: SavedDevice; currentPct: number; tint: string }) {
+    const client = apiFor(device);
+    const toast = useUi((s) => s.push);
+
+    const [list, setList] = useState<Favorite[] | null>(null);
+    const [editing, setEditing] = useState<Favorite | null>(null);
+
+    const reload = async () => {
+        try {
+            const r = await client.favorites();
+            setList(r.favorites);
+        } catch (e: any) {
+            toast(e.message, 'error');
+        }
+    };
+    useEffect(() => { reload(); }, [device.id, device.ip, device.apiToken]);
+
+    const apply = async (f: Favorite) => {
+        try {
+            await client.set(f.target_pct);
+            toast(`→ ${f.name || `${f.target_pct} %`}`, 'ok');
+        } catch (e: any) {
+            toast(e.message, 'error');
+        }
+    };
+
+    const startNew = () => {
+        const empty = list?.find((x) => !x.enabled);
+        if (!empty) {
+            toast('Ya tienes el máximo de favoritas (6)', 'info');
+            return;
+        }
+        setEditing({ ...empty, enabled: true, name: '', target_pct: currentPct });
+    };
+
+    const saveEditing = async () => {
+        if (!editing) return;
+        if (!editing.name.trim()) {
+            toast('Pon un nombre a la favorita', 'error');
+            return;
+        }
+        try {
+            await client.setFavorite(editing);
+            toast('Favorita guardada', 'ok');
+            setEditing(null);
+            reload();
+        } catch (e: any) {
+            toast(e.message, 'error');
+        }
+    };
+
+    const removeFav = async (i: number) => {
+        try {
+            await client.deleteFavorite(i);
+            reload();
+        } catch (e: any) {
+            toast(e.message, 'error');
+        }
+    };
+
+    if (editing) {
+        return (
+            <Card>
+                <Section
+                    title={list?.[editing.i]?.enabled ? 'Editar favorita' : 'Nueva favorita'}
+                    subtitle={`Slot #${editing.i + 1} de ${list?.length ?? 6}`}
+                />
+                <Field
+                    label="Nombre"
+                    value={editing.name}
+                    onChangeText={(t) => setEditing({ ...editing, name: t.slice(0, 15) })}
+                    placeholder="Día, Lectura, Cine…"
+                    maxLength={15}
+                    autoFocus
+                />
+                <View className="flex-row justify-between mb-1">
+                    <Text className="text-muted text-xs uppercase tracking-widest">Posición</Text>
+                    <Text className="text-fg font-mono text-sm">{editing.target_pct} %</Text>
+                </View>
+                <Slider
+                    style={{ width: '100%', height: 32 }}
+                    minimumValue={0}
+                    maximumValue={100}
+                    step={1}
+                    value={editing.target_pct}
+                    minimumTrackTintColor={tint}
+                    maximumTrackTintColor="rgba(255,255,255,0.10)"
+                    thumbTintColor={tint}
+                    onValueChange={(v) => setEditing({ ...editing, target_pct: Math.round(v) })}
+                />
+                <Pressable
+                    onPress={() => setEditing({ ...editing, target_pct: currentPct })}
+                    className="mt-2 self-start"
+                    android_ripple={{ color: 'rgba(255,255,255,0.05)' }}
+                >
+                    <View className="flex-row items-center px-3 py-1.5 rounded-md" style={{ backgroundColor: 'rgba(78,161,255,0.10)' }}>
+                        <Ionicons name="locate-outline" size={12} color={colors.primary} style={{ marginRight: 4 }} />
+                        <Text className="text-primary text-xs font-semibold">Usar posición actual ({currentPct} %)</Text>
+                    </View>
+                </Pressable>
+
+                <View className="flex-row gap-2 mt-3">
+                    <View className="flex-1">
+                        <Button label="Cancelar" variant="ghost" full onPress={() => setEditing(null)} />
+                    </View>
+                    <View className="flex-1">
+                        <Button label="Guardar" full onPress={saveEditing} />
+                    </View>
+                </View>
+            </Card>
+        );
+    }
+
+    const enabled = list?.filter((f) => f.enabled) ?? [];
+    return (
+        <Card>
+            <View className="flex-row items-center justify-between mb-2">
+                <Text className="text-muted text-xs uppercase tracking-widest">Favoritas</Text>
+                <Pressable onPress={startNew} android_ripple={{ color: 'rgba(255,255,255,0.05)' }}>
+                    <View className="flex-row items-center px-3 py-1.5 rounded-md" style={{ backgroundColor: 'rgba(78,161,255,0.12)' }}>
+                        <Ionicons name="add" size={12} color={colors.primary} style={{ marginRight: 4 }} />
+                        <Text className="text-primary text-xs font-semibold">Capturar actual</Text>
+                    </View>
+                </Pressable>
+            </View>
+
+            {enabled.length === 0 ? (
+                <Text className="text-muted text-sm">
+                    Aún no tienes favoritas. Posiciona la cortina como quieras y pulsa "Capturar actual"
+                    para guardarla con un nombre.
+                </Text>
+            ) : (
+                <View className="flex-row flex-wrap gap-2">
+                    {enabled.map((f) => (
+                        <View
+                            key={f.i}
+                            className="rounded-2xl overflow-hidden border border-border"
+                            style={{ backgroundColor: 'rgba(255,255,255,0.03)' }}
+                        >
+                            <Pressable onPress={() => apply(f)} android_ripple={{ color: 'rgba(255,255,255,0.05)' }}>
+                                <View className="flex-row items-center px-3 py-2.5">
+                                    <Ionicons name="star" size={12} color={tint} style={{ marginRight: 6 }} />
+                                    <Text className="text-fg text-sm font-semibold mr-2">{f.name || `#${f.i + 1}`}</Text>
+                                    <Text className="text-muted text-xs font-mono">{f.target_pct}%</Text>
+                                </View>
+                            </Pressable>
+                            <View className="flex-row border-t border-border">
+                                <Pressable
+                                    onPress={() => setEditing(f)}
+                                    className="flex-1 items-center py-1.5"
+                                    android_ripple={{ color: 'rgba(255,255,255,0.05)' }}
+                                >
+                                    <Ionicons name="create-outline" size={14} color={colors.muted} />
+                                </Pressable>
+                                <View className="w-px" style={{ backgroundColor: colors.border }} />
+                                <Pressable
+                                    onPress={() => removeFav(f.i)}
+                                    className="flex-1 items-center py-1.5"
+                                    android_ripple={{ color: 'rgba(255,255,255,0.05)' }}
+                                >
+                                    <Ionicons name="trash-outline" size={14} color={colors.muted} />
+                                </Pressable>
+                            </View>
+                        </View>
+                    ))}
+                </View>
+            )}
+        </Card>
     );
 }
 
@@ -416,6 +596,7 @@ function ConfigTab({ device }: { device: SavedDevice }) {
     const toast = useUi((s) => s.push);
     const client = apiFor(device);
     const updateDevice = useDevices((s) => s.update);
+    const updateDeviceLocal = updateDevice;
 
     const reload = async () => {
         try {
@@ -504,6 +685,41 @@ function ConfigTab({ device }: { device: SavedDevice }) {
             </Card>
 
             <Card className="mb-3">
+                <Section
+                    title="Límites de recorrido"
+                    subtitle="Protege la cortina"
+                />
+                <Text className="text-muted text-sm mb-3">
+                    Define hasta dónde puede subir y bajar la cortina sin riesgo
+                    de forzar el riel o la tela.
+                </Text>
+                <LimitsEditor
+                    open={cfg.limit_open ?? 0}
+                    close={cfg.limit_close ?? 100}
+                    onChange={(o, c) => setCfg({ ...cfg, limit_open: o, limit_close: c })}
+                />
+                <View className="mt-2">
+                    <Button
+                        label="Aplicar límites"
+                        full
+                        disabled={busy}
+                        onPress={() => save({
+                            limit_open: cfg.limit_open ?? 0,
+                            limit_close: cfg.limit_close ?? 100,
+                        })}
+                    />
+                </View>
+            </Card>
+
+            <Card className="mb-3">
+                <Section title="Habitación" subtitle="Organización en el Home" />
+                <RoomPicker
+                    selected={device.roomId}
+                    onPick={(rid) => updateDeviceLocal(device.id, { roomId: rid })}
+                />
+            </Card>
+
+            <Card className="mb-3">
                 <Section title="Hora / NTP" />
                 <Switch label="Sincronizar por NTP" value={!!cfg.ntp_enabled} onValueChange={(v) => save({ ntp_enabled: v })} />
                 <Field label="Servidor NTP" value={cfg.ntp_server || ''} onChangeText={(t) => setCfg({ ...cfg, ntp_server: t })} autoCapitalize="none" />
@@ -525,6 +741,132 @@ function ConfigTab({ device }: { device: SavedDevice }) {
                 />
                 <Button label="Aplicar token" full disabled={busy} onPress={() => save({ api_token: cfg.api_token })} />
             </Card>
+        </View>
+    );
+}
+
+// ---------------------------------------------------------------------------
+//  Editor de límites de recorrido
+// ---------------------------------------------------------------------------
+function LimitsEditor({
+    open, close, onChange,
+}: { open: number; close: number; onChange: (o: number, c: number) => void }) {
+    return (
+        <View>
+            <View className="mb-3">
+                <View className="flex-row justify-between mb-1">
+                    <Text className="text-muted text-xs uppercase tracking-widest">Tope abierto</Text>
+                    <Text className="text-fg font-mono text-sm">{open} %</Text>
+                </View>
+                <Slider
+                    style={{ width: '100%', height: 32 }}
+                    minimumValue={0}
+                    maximumValue={Math.max(0, close - 1)}
+                    step={1}
+                    value={open}
+                    minimumTrackTintColor="rgba(255,255,255,0.10)"
+                    maximumTrackTintColor={colors.primary}
+                    thumbTintColor={colors.primary}
+                    onValueChange={(v) => onChange(Math.round(v), close)}
+                />
+                <Text className="text-muted text-xs mt-0.5">
+                    No abrirá más allá del {open} % (0 = totalmente arriba).
+                </Text>
+            </View>
+            <View>
+                <View className="flex-row justify-between mb-1">
+                    <Text className="text-muted text-xs uppercase tracking-widest">Tope cerrado</Text>
+                    <Text className="text-fg font-mono text-sm">{close} %</Text>
+                </View>
+                <Slider
+                    style={{ width: '100%', height: 32 }}
+                    minimumValue={Math.min(100, open + 1)}
+                    maximumValue={100}
+                    step={1}
+                    value={close}
+                    minimumTrackTintColor={colors.primary}
+                    maximumTrackTintColor="rgba(255,255,255,0.10)"
+                    thumbTintColor={colors.primary}
+                    onValueChange={(v) => onChange(open, Math.round(v))}
+                />
+                <Text className="text-muted text-xs mt-0.5">
+                    No cerrará más allá del {close} % (100 = totalmente abajo).
+                </Text>
+            </View>
+        </View>
+    );
+}
+
+// ---------------------------------------------------------------------------
+//  Selector de habitación
+// ---------------------------------------------------------------------------
+function RoomPicker({
+    selected, onPick,
+}: { selected?: string; onPick: (id: string | undefined) => void }) {
+    const rooms = useRooms((s) => s.rooms.slice().sort((a, b) => a.order - b.order));
+    return (
+        <View>
+            <View className="flex-row flex-wrap gap-2">
+                <Pressable
+                    onPress={() => onPick(undefined)}
+                    android_ripple={{ color: 'rgba(255,255,255,0.05)' }}
+                >
+                    <View
+                        className="px-3 py-2 rounded-xl"
+                        style={{
+                            backgroundColor: selected ? 'rgba(255,255,255,0.04)' : 'rgba(78,161,255,0.18)',
+                            borderWidth: 1,
+                            borderColor: selected ? colors.border : colors.primary,
+                        }}
+                    >
+                        <Text
+                            className="text-xs font-semibold"
+                            style={{ color: selected ? colors.muted : colors.primary }}
+                        >
+                            Sin habitación
+                        </Text>
+                    </View>
+                </Pressable>
+                {rooms.map((r) => {
+                    const sel = selected === r.id;
+                    return (
+                        <Pressable
+                            key={r.id}
+                            onPress={() => onPick(r.id)}
+                            android_ripple={{ color: 'rgba(255,255,255,0.05)' }}
+                        >
+                            <View
+                                className="flex-row items-center px-3 py-2 rounded-xl"
+                                style={{
+                                    backgroundColor: sel ? 'rgba(78,161,255,0.18)' : 'rgba(255,255,255,0.04)',
+                                    borderWidth: 1,
+                                    borderColor: sel ? colors.primary : colors.border,
+                                }}
+                            >
+                                {r.icon ? (
+                                    <Ionicons
+                                        name={r.icon as any}
+                                        size={12}
+                                        color={sel ? colors.primary : colors.muted}
+                                        style={{ marginRight: 5 }}
+                                    />
+                                ) : null}
+                                <Text
+                                    className="text-xs font-semibold"
+                                    style={{ color: sel ? colors.primary : colors.fg }}
+                                >
+                                    {r.name}
+                                </Text>
+                            </View>
+                        </Pressable>
+                    );
+                })}
+            </View>
+            {rooms.length === 0 ? (
+                <Text className="text-muted text-xs mt-2">
+                    No has creado habitaciones todavía. Ve a Ajustes → Habitaciones para crear una.
+                </Text>
+            ) : null}
         </View>
     );
 }

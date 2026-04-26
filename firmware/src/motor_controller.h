@@ -22,6 +22,11 @@ enum class State : uint8_t {
 
 void begin(const storage::Settings& s);
 
+// Re-aplica campos de Settings que el motor usa en runtime (límites,
+// inversión, velocidades). Llámalo tras guardar la config para que el
+// cambio tenga efecto sin reiniciar.
+void reloadFromSettings(const storage::Settings& s);
+
 // Mover a porcentaje 0..100 (0 = totalmente arriba, 100 = totalmente abajo).
 void moveToPercent(uint8_t percent);
 

@@ -180,8 +180,64 @@ static void opSetMotor(JsonDocument& req, JsonDocument& resp) {
     if (req["max_speed_hz"].is<int>())       s_settings->max_speed_hz     = req["max_speed_hz"].as<int>();
     if (req["accel_hz_per_s"].is<int>())     s_settings->accel_hz_per_s   = req["accel_hz_per_s"].as<int>();
     if (req["use_endstops"].is<bool>())      s_settings->use_endstops     = req["use_endstops"].as<bool>();
+    if (req["limit_open"].is<int>()) {
+        int v = req["limit_open"]; if (v < 0) v = 0; if (v > 100) v = 100;
+        s_settings->limit_open = v;
+    }
+    if (req["limit_close"].is<int>()) {
+        int v = req["limit_close"]; if (v < 0) v = 0; if (v > 100) v = 100;
+        s_settings->limit_close = v;
+    }
+    if (s_settings->limit_open >= s_settings->limit_close) {
+        s_settings->limit_open = 0; s_settings->limit_close = 100;
+    }
     storage::save(*s_settings);
+    motor::reloadFromSettings(*s_settings);
     resp["op"] = "set_motor"; resp["ok"] = true;
+}
+
+static void opGetFavorites(JsonDocument& resp) {
+    resp["op"] = "get_favorites";
+    JsonArray arr = resp["favorites"].to<JsonArray>();
+    for (size_t i = 0; i < storage::FAVORITES_COUNT; ++i) {
+        JsonObject f = arr.add<JsonObject>();
+        f["i"]          = (int)i;
+        f["enabled"]    = s_settings->favorites[i].enabled;
+        f["target_pct"] = s_settings->favorites[i].target_pct;
+        f["name"]       = s_settings->favorites[i].name;
+    }
+}
+
+static void opSetFavorite(JsonDocument& req, JsonDocument& resp) {
+    int i = req["i"] | -1;
+    if (i < 0 || i >= (int)storage::FAVORITES_COUNT) {
+        resp["ok"] = false; resp["error"] = "índice fuera de rango"; return;
+    }
+    SettingsLock l;
+    auto& f = s_settings->favorites[i];
+    if (req["enabled"].is<bool>())    f.enabled    = req["enabled"].as<bool>();
+    if (req["target_pct"].is<int>()) {
+        int v = req["target_pct"]; if (v < 0) v = 0; if (v > 100) v = 100;
+        f.target_pct = v;
+    }
+    if (req["name"].is<const char*>()) {
+        const char* n = req["name"];
+        strncpy(f.name, n, sizeof(f.name) - 1);
+        f.name[sizeof(f.name) - 1] = 0;
+    }
+    storage::saveFavorites(*s_settings);
+    resp["op"] = "set_favorite"; resp["ok"] = true;
+}
+
+static void opDelFavorite(JsonDocument& req, JsonDocument& resp) {
+    int i = req["i"] | -1;
+    if (i < 0 || i >= (int)storage::FAVORITES_COUNT) {
+        resp["ok"] = false; resp["error"] = "índice fuera de rango"; return;
+    }
+    SettingsLock l;
+    s_settings->favorites[i] = storage::FavoritePreset{};
+    storage::saveFavorites(*s_settings);
+    resp["op"] = "del_favorite"; resp["ok"] = true;
 }
 
 static void opSetTime(JsonDocument& req, JsonDocument& resp) {
@@ -314,6 +370,9 @@ class RequestCB : public NimBLECharacteristicCallbacks {
             else if (op == "get_schedules") opGetSchedules(resp);
             else if (op == "set_schedule")  opSetSchedule(req, resp);
             else if (op == "del_schedule")  opDelSchedule(req, resp);
+            else if (op == "get_favorites") opGetFavorites(resp);
+            else if (op == "set_favorite")  opSetFavorite(req, resp);
+            else if (op == "del_favorite")  opDelFavorite(req, resp);
             else if (op == "control")       opControl(req, resp);
             else if (op == "calibrate")     opCalibrate(resp);
             else if (op == "reboot")        { opReboot(resp); doReboot = true; }

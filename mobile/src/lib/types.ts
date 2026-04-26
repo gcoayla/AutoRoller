@@ -16,10 +16,40 @@ export type SavedDevice = {
     ip?: string;            // última IP conocida (mDNS o BLE info)
     bleId?: string;         // address BLE para reconectar
     apiToken?: string;      // token para auth HTTP (vacío = sin auth)
+    roomId?: string;        // habitación a la que pertenece (opcional)
     addedAt: number;
     favorite?: boolean;
     color?: string;         // tinte personalizado para distinguirlos
     notes?: string;
+};
+
+// Habitación (sólo en la app, no en el firmware).
+export type Room = {
+    id: string;
+    name: string;
+    icon?: string;          // nombre de un Ionicon (e.g. "bed-outline")
+    color?: string;
+    order: number;
+};
+
+// Preset / escena: combinación de posiciones para varios dispositivos.
+export type PresetItem = {
+    deviceId: string;
+    target_pct: number;
+};
+export type Preset = {
+    id: string;
+    name: string;
+    icon?: string;
+    items: PresetItem[];
+};
+
+// Favorita por dispositivo (vive en el firmware, expuesta como Settings.favorites).
+export type Favorite = {
+    i: number;
+    enabled: boolean;
+    name: string;
+    target_pct: number;
 };
 
 // Estado en vivo (no persistente) del nodo.
@@ -62,6 +92,8 @@ export type DeviceConfig = {
     ntp_server?: string;
     timezone?: string;
     api_token?: string;
+    limit_open?: number;
+    limit_close?: number;
 };
 
 export type Schedule = {

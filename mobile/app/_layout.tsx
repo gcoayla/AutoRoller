@@ -33,6 +33,9 @@ export default function RootLayout() {
                 <Stack.Screen name="ble-setup" options={{ title: 'Configuración inicial', presentation: 'card' }} />
                 <Stack.Screen name="settings" options={{ title: 'Ajustes de la app' }} />
                 <Stack.Screen name="device/[id]" options={{ headerShown: false }} />
+                <Stack.Screen name="rooms/index"   options={{ title: 'Habitaciones' }} />
+                <Stack.Screen name="presets/index" options={{ title: 'Presets' }} />
+                <Stack.Screen name="presets/[id]"  options={{ title: 'Editor de preset' }} />
             </Stack>
             <ToastHost />
         </GestureHandlerRootView>

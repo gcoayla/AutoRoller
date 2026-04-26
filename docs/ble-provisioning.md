@@ -110,6 +110,9 @@ en `\n`).
 | `get_schedules`   | —                                     | `schedules[]`                |
 | `set_schedule`    | `i, enabled, hour, minute, days_mask, target_pct` | `ok`             |
 | `del_schedule`    | `i`                                   | `ok`                         |
+| `get_favorites`   | —                                     | `favorites[]`                |
+| `set_favorite`    | `i, enabled, name, target_pct`        | `ok`                         |
+| `del_favorite`    | `i`                                   | `ok`                         |
 | `control`         | `action: open|close|stop|set, value?` | `ok`                         |
 | `calibrate`       | —                                     | `ok`                         |
 | `reboot`          | —                                     | `ok`                         |

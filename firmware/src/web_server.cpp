@@ -160,6 +160,8 @@ static void handleConfigGet(AsyncWebServerRequest* req) {
     doc["max_speed_hz"]     = s_settings->max_speed_hz;
     doc["accel_hz_per_s"]   = s_settings->accel_hz_per_s;
     doc["use_endstops"]     = s_settings->use_endstops;
+    doc["limit_open"]       = s_settings->limit_open;
+    doc["limit_close"]      = s_settings->limit_close;
     doc["ble_enabled"]      = s_settings->ble_enabled;
     doc["ble_policy"]       = s_settings->ble_policy;
     doc["ble_passkey"]      = s_settings->ble_passkey;
@@ -203,6 +205,60 @@ static void handleSchedulePost(AsyncWebServerRequest* req, JsonVariant& body) {
     if (obj["days_mask"].is<int>())  e.days_mask  = obj["days_mask"].as<int>();
     if (obj["target_pct"].is<int>()) e.target_pct = obj["target_pct"].as<int>();
     storage::saveSchedules(*s_settings);
+    req->send(200, "application/json", "{\"ok\":true}");
+}
+
+// ----------------------- favoritos --------------------------------------
+static void handleFavoritesGet(AsyncWebServerRequest* req) {
+    JsonDocument doc;
+    JsonArray arr = doc["favorites"].to<JsonArray>();
+    for (size_t i = 0; i < storage::FAVORITES_COUNT; ++i) {
+        JsonObject f = arr.add<JsonObject>();
+        const auto& src = s_settings->favorites[i];
+        f["i"]          = (int)i;
+        f["enabled"]    = src.enabled;
+        f["target_pct"] = src.target_pct;
+        f["name"]       = src.name;
+    }
+    String out; serializeJson(doc, out);
+    req->send(200, "application/json", out);
+}
+
+static void handleFavoritesPost(AsyncWebServerRequest* req, JsonVariant& body) {
+    AUTH_GUARD(req);
+    SettingsLock l;
+    auto obj = body.as<JsonObject>();
+    int i = obj["i"] | -1;
+    if (i < 0 || i >= (int)storage::FAVORITES_COUNT) {
+        req->send(400, "application/json", "{\"error\":\"índice fuera de rango\"}");
+        return;
+    }
+    auto& f = s_settings->favorites[i];
+    if (obj["enabled"].is<bool>())    f.enabled    = obj["enabled"].as<bool>();
+    if (obj["target_pct"].is<int>())  f.target_pct = std::min(100, std::max(0, obj["target_pct"].as<int>()));
+    if (obj["name"].is<const char*>()) {
+        const char* n = obj["name"];
+        strncpy(f.name, n, sizeof(f.name) - 1);
+        f.name[sizeof(f.name) - 1] = 0;
+    }
+    storage::saveFavorites(*s_settings);
+    req->send(200, "application/json", "{\"ok\":true}");
+}
+
+static void handleFavoritesDelete(AsyncWebServerRequest* req) {
+    AUTH_GUARD(req);
+    if (!req->hasParam("i")) {
+        req->send(400, "application/json", "{\"error\":\"falta i\"}"); return;
+    }
+    int i = req->getParam("i")->value().toInt();
+    if (i < 0 || i >= (int)storage::FAVORITES_COUNT) {
+        req->send(400, "application/json", "{\"error\":\"índice fuera de rango\"}"); return;
+    }
+    {
+        SettingsLock l;
+        s_settings->favorites[i] = storage::FavoritePreset{};
+        storage::saveFavorites(*s_settings);
+    }
     req->send(200, "application/json", "{\"ok\":true}");
 }
 
@@ -280,6 +336,15 @@ static void handleConfigPost(AsyncWebServerRequest* req, JsonVariant& body) {
     if (obj["max_speed_hz"].is<int>())              s_settings->max_speed_hz    = std::min(50000, std::max(100, obj["max_speed_hz"].as<int>()));
     if (obj["accel_hz_per_s"].is<int>())            s_settings->accel_hz_per_s  = std::min(100000, std::max(100, obj["accel_hz_per_s"].as<int>()));
     if (obj["use_endstops"].is<bool>())             s_settings->use_endstops    = obj["use_endstops"].as<bool>();
+    if (obj["limit_open"].is<int>())                s_settings->limit_open      = std::min(100, std::max(0, obj["limit_open"].as<int>()));
+    if (obj["limit_close"].is<int>())               s_settings->limit_close     = std::min(100, std::max(0, obj["limit_close"].as<int>()));
+    if (s_settings->limit_open >= s_settings->limit_close) {
+        // Valor incoherente — restauramos defaults para no bloquear el motor.
+        s_settings->limit_open = 0;
+        s_settings->limit_close = 100;
+    }
+    // Aplicar al motor sin esperar a un reinicio.
+    motor::reloadFromSettings(*s_settings);
     if (obj["ble_enabled"].is<bool>())              s_settings->ble_enabled     = obj["ble_enabled"].as<bool>();
     if (obj["ble_policy"].is<int>())                s_settings->ble_policy      = obj["ble_policy"].as<int>();
     if (obj["ble_passkey"].is<int>())               s_settings->ble_passkey     = obj["ble_passkey"].as<unsigned int>();
@@ -396,6 +461,8 @@ void begin(storage::Settings& settings) {
     server.on("/api/scan",           HTTP_GET,  handleScan);
     server.on("/api/schedules",      HTTP_GET,  handleScheduleGet);
     server.on("/api/schedules",      HTTP_DELETE, handleScheduleDelete);
+    server.on("/api/favorites",      HTTP_GET,  handleFavoritesGet);
+    server.on("/api/favorites",      HTTP_DELETE, handleFavoritesDelete);
 
     server.addHandler(new AsyncCallbackJsonWebHandler(
         "/api/config",
@@ -406,6 +473,11 @@ void begin(storage::Settings& settings) {
         "/api/schedules",
         [](AsyncWebServerRequest* req, JsonVariant& json) {
             handleSchedulePost(req, json);
+        }));
+    server.addHandler(new AsyncCallbackJsonWebHandler(
+        "/api/favorites",
+        [](AsyncWebServerRequest* req, JsonVariant& json) {
+            handleFavoritesPost(req, json);
         }));
     server.addHandler(new AsyncCallbackJsonWebHandler(
         "/api/ble",

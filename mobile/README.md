@@ -25,6 +25,14 @@ casa desde el móvil:
 - **Reconfig BLE** desde un dispositivo ya guardado: si tienes el `bleId`,
   un botón en "Avanzado" reabre el wizard saltando directo a la pantalla
   de WiFi.
+- **Habitaciones** para agrupar dispositivos en el Home con acciones por
+  sala (subir/bajar/parar todo lo del salón, etc).
+- **Presets / escenas**: combina posiciones de varias cortinas en un solo
+  botón ("Modo Cine", "Buenas Noches", "Despertador").
+- **Posiciones favoritas** por dispositivo (hasta 6, persistidas en el
+  firmware): nombre + porcentaje, con captura de la posición actual.
+- **Límites de recorrido** (`limit_open` / `limit_close`) para no forzar
+  la cortina, configurables en el wizard inicial y editables después.
 
 > Vista previa visual del diseño en [`docs/mockups/`](../docs/mockups/README.md)
 > (SVGs a tamaño teléfono que recrean las pantallas principales).

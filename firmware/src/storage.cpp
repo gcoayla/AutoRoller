@@ -55,6 +55,13 @@ Settings load() {
     s.calibrated       = prefs.getBool("calibrated", false);
     s.use_endstops     = prefs.getBool("endstops", true);
 
+    s.limit_open       = prefs.getUChar("lim_open", 0);
+    s.limit_close      = prefs.getUChar("lim_close", 100);
+    if (s.limit_open >= s.limit_close) {
+        // Inválido en NVS; restauramos defaults para no bloquear el motor.
+        s.limit_open = 0; s.limit_close = 100;
+    }
+
     s.ble_enabled      = prefs.getBool("ble_en", true);
     s.ble_policy       = prefs.getUChar("ble_pol", BLE_DEFAULT_POLICY);
     s.ble_passkey      = prefs.getUInt("ble_pin", 0);
@@ -68,6 +75,11 @@ Settings load() {
     size_t need = sizeof(s.schedules);
     if (prefs.getBytesLength("sched") == need) {
         prefs.getBytes("sched", &s.schedules, need);
+    }
+    // Favoritas: igual.
+    size_t fneed = sizeof(s.favorites);
+    if (prefs.getBytesLength("favs") == fneed) {
+        prefs.getBytes("favs", &s.favorites, fneed);
     }
     return s;
 }
@@ -92,6 +104,8 @@ void save(const Settings& s) {
     prefs.putInt("cur_pos",      s.current_position);
     prefs.putBool("calibrated",  s.calibrated);
     prefs.putBool("endstops",    s.use_endstops);
+    prefs.putUChar("lim_open",   s.limit_open);
+    prefs.putUChar("lim_close",  s.limit_close);
 
     prefs.putBool("ble_en",      s.ble_enabled);
     prefs.putUChar("ble_pol",    s.ble_policy);
@@ -103,11 +117,17 @@ void save(const Settings& s) {
     prefs.putString("tz",        s.timezone);
 
     saveSchedules(s);
+    saveFavorites(s);
 }
 
 void saveSchedules(const Settings& s) {
     Lock l;
     prefs.putBytes("sched", &s.schedules, sizeof(s.schedules));
+}
+
+void saveFavorites(const Settings& s) {
+    Lock l;
+    prefs.putBytes("favs", &s.favorites, sizeof(s.favorites));
 }
 
 void savePosition(int32_t position) {

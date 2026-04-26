@@ -6,6 +6,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 import type { DeviceStatus, SavedDevice } from '@/lib/types';
+import { usePresets } from './presets';
 
 type State = {
     devices: SavedDevice[];
@@ -15,6 +16,8 @@ type State = {
     add: (dev: SavedDevice) => void;
     update: (id: string, patch: Partial<SavedDevice>) => void;
     remove: (id: string) => void;
+    /** Limpia el roomId de todos los devices que apuntan a `roomId`. */
+    pruneRoom: (roomId: string) => void;
     setStatus: (id: string, st: DeviceStatus) => void;
     setOnline: (id: string, online: boolean) => void;
     toggleFavorite: (id: string) => void;
@@ -48,7 +51,9 @@ export const useDevices = create<State>()(
                     ),
                 })),
 
-            remove: (id) =>
+            remove: (id) => {
+                // Cascada: quita las referencias en presets antes de borrar.
+                try { usePresets.getState().pruneDevice(id); } catch {}
                 set((s) => ({
                     devices: s.devices.filter((d) => d.id !== id),
                     statuses: Object.fromEntries(
@@ -56,6 +61,14 @@ export const useDevices = create<State>()(
                     ),
                     onlineMap: Object.fromEntries(
                         Object.entries(s.onlineMap).filter(([k]) => k !== id),
+                    ),
+                }));
+            },
+
+            pruneRoom: (roomId) =>
+                set((s) => ({
+                    devices: s.devices.map((d) =>
+                        d.roomId === roomId ? { ...d, roomId: undefined } : d,
                     ),
                 })),
 
